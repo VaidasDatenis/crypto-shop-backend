@@ -1,0 +1,69 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// prisma/schema.prisma
+datasource db {
+  provider  = "postgresql"
+  url  	    = env("DATABASE_URL")
+  // uncomment next line if you use Prisma <5.10
+  // directUrl = env("DATABASE_URL_UNPOOLED")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  walletAddress String    @unique
+  walletNames   Json?     // Assuming this will store an object with wallet names and their addresses
+  email         String?   @unique
+  items         Item[]
+  buyerTransactions  Transaction[]  @relation("BuyerTransactions")
+  sellerTransactions Transaction[]  @relation("SellerTransactions")
+  messagesSent     Message[] @relation("messagesSent")
+  messagesReceived Message[] @relation("messagesReceived")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Item {
+  id          String       @id @default(uuid())
+  title       String
+  description String
+  images      Json         // URLs to images, assuming JSON array
+  price       Decimal      // Adjusted to use Decimal for accurate currency representation
+  currency    String       // The cryptocurrency in which the price is denoted
+  sellerId    String
+  seller      User         @relation(fields: [sellerId], references: [id])
+  transactions Transaction[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Transaction {
+  id         String @id @default(uuid())
+  itemId     String
+  buyerId    String
+  sellerId   String
+  item       Item     @relation(fields: [itemId], references: [id])
+  buyer      User     @relation(fields: [buyerId], references: [id], name: "BuyerTransactions")
+  seller     User     @relation(fields: [sellerId], references: [id], name: "SellerTransactions")
+  status     String   // e.g., "pending", "completed", "cancelled"
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Message {
+  id         String @id @default(uuid())
+  content    String
+  fromId     String
+  toId       String
+  from       User     @relation(fields: [fromId], references: [id], name: "messagesSent")
+  to         User     @relation(fields: [toId], references: [id], name: "messagesReceived")
+  createdAt  DateTime @default(now())
+}
+
