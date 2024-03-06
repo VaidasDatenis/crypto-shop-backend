@@ -6,7 +6,4 @@ export declare class AuthController {
     signIn(signInDto: Prisma.UserCreateInput): Promise<{
         access_token: string;
     }>;
-    signUp(createUserDto: Prisma.UserCreateInput): Promise<{
-        access_token: string;
-    }>;
 }

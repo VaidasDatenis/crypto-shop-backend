@@ -22,31 +22,19 @@ let AuthController = class AuthController {
         this.authService = authService;
     }
     signIn(signInDto) {
-        return this.authService.logIn(signInDto.walletAddress);
-    }
-    signUp(createUserDto) {
-        return this.authService.singUp(createUserDto);
+        return this.authService.connect(signInDto);
     }
 };
 exports.AuthController = AuthController;
 __decorate([
     (0, constants_1.Public)(),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
-    (0, common_1.Post)('login'),
+    (0, common_1.Post)('connect'),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], AuthController.prototype, "signIn", null);
-__decorate([
-    (0, constants_1.Public)(),
-    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
-    (0, common_1.Post)('signup'),
-    __param(0, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], AuthController.prototype, "signUp", null);
 exports.AuthController = AuthController = __decorate([
     (0, common_1.Controller)('auth'),
     __metadata("design:paramtypes", [auth_service_1.AuthService])

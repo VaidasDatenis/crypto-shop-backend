@@ -18,21 +18,13 @@ let AuthService = class AuthService {
         this.userService = userService;
         this.jwtService = jwtService;
     }
-    async logIn(providedWalletAddress) {
-        const user = await this.userService.findUserByWalletAddress(providedWalletAddress);
-        if (user?.walletAddress !== providedWalletAddress) {
-            throw new common_1.UnauthorizedException();
+    async connect(signInDto) {
+        let user = await this.userService.findUserByWalletAddress(signInDto.walletAddress);
+        if (!user) {
+            user = await this.userService.create(signInDto);
         }
         const { walletAddress, ...result } = user;
         const payload = { sub: user.id, walletAddress: user.walletAddress };
-        return {
-            access_token: await this.jwtService.signAsync(payload),
-        };
-    }
-    async singUp(createUserDto) {
-        const newUser = await this.userService.create(createUserDto);
-        const { walletAddress, ...result } = newUser;
-        const payload = { sub: newUser.id, walletAddress: newUser.walletAddress };
         return {
             access_token: await this.jwtService.signAsync(payload),
         };

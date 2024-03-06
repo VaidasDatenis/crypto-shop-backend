@@ -10,15 +10,8 @@ export class AuthController {
 
   @Public()
   @HttpCode(HttpStatus.OK)
-  @Post('login')
+  @Post('connect')
   signIn(@Body() signInDto: Prisma.UserCreateInput) {
-    return this.authService.logIn(signInDto.walletAddress);
-  }
-
-  @Public()
-  @HttpCode(HttpStatus.OK)
-  @Post('signup')
-  signUp(@Body() createUserDto: Prisma.UserCreateInput) {
-    return this.authService.singUp(createUserDto);
+    return this.authService.connect(signInDto);
   }
 }

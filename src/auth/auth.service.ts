@@ -10,22 +10,14 @@ export class AuthService {
     private jwtService: JwtService,
     ) {}
 
-  async logIn(providedWalletAddress: string): Promise<{ access_token: string }> {
-    const user = await this.userService.findUserByWalletAddress(providedWalletAddress);
-    if (user?.walletAddress !== providedWalletAddress) {
-      throw new UnauthorizedException();
+  async connect(signInDto: Prisma.UserCreateInput): Promise<{ access_token: string }> {
+    let user = await this.userService.findUserByWalletAddress(signInDto.walletAddress);
+    // If user doesn't exist, create a new user record
+    if (!user) {
+      user = await this.userService.create(signInDto);
     }
     const { walletAddress, ...result } = user;
     const payload = { sub: user.id, walletAddress: user.walletAddress };
-    return {
-      access_token: await this.jwtService.signAsync(payload),
-    };
-  }
-
-  async singUp(createUserDto: Prisma.UserCreateInput) {
-    const newUser = await this.userService.create(createUserDto);
-    const { walletAddress, ...result } = newUser;
-    const payload = { sub: newUser.id, walletAddress: newUser.walletAddress };
     return {
       access_token: await this.jwtService.signAsync(payload),
     };

@@ -5,10 +5,7 @@ export declare class AuthService {
     private readonly userService;
     private jwtService;
     constructor(userService: UserService, jwtService: JwtService);
-    logIn(providedWalletAddress: string): Promise<{
-        access_token: string;
-    }>;
-    singUp(createUserDto: Prisma.UserCreateInput): Promise<{
+    connect(signInDto: Prisma.UserCreateInput): Promise<{
         access_token: string;
     }>;
 }

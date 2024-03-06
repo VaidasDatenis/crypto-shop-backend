@@ -1,61 +1,73 @@
+<p align="center">
+  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
+</p>
 
-# Cryptomarket
+[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
+[circleci-url]: https://circleci.com/gh/nestjs/nest
 
-Cryptomarket is a cutting-edge online marketplace that leverages the power of NestJS and Prisma for backend services, enabling users to buy and sell items with cryptocurrency transactions. Inspired by platforms like Vinted, Cryptomarket aims to streamline peer-to-peer transactions by integrating blockchain technology for secure and transparent dealings.
+  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
+    <p align="center">
+<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
+<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
+<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
+<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
+<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
+<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
+<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
+<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
+  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
+    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
+  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
+</p>
+  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
+  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-## Features
+## Description
 
-- **User Management**: Secure login and registration using blockchain wallets.
-- **Item Listings**: Users can list items for sale, set prices in various cryptocurrencies, and upload item images.
-- **Crypto Payments**: Facilitates direct cryptocurrency transactions between buyers and sellers.
-- **Messaging**: Enables communication between buyers and sellers for negotiation and transaction details.
-- **Transaction History**: Records and displays a history of user transactions, enhancing transparency and trust.
+[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
-## Technologies
-
-- **NestJS**: A progressive Node.js framework for building efficient and scalable server-side applications.
-- **Prisma**: Next-generation ORM for Node.js and TypeScript, providing a powerful database toolkit.
-- **Blockchain/Cryptocurrency Integration**: Utilizes smart contracts for handling transactions and wallet interactions.
-
-## Getting Started
-
-To get started with Cryptomarket, follow these steps:
-
-1. **Clone the repository**:
-
-```bash
-git clone https://github.com/yourrepository/cryptomarket.git
-```
-
-2. **Install dependencies**:
-
-```bash
-cd cryptomarket
-npm install
-```
-
-3. **Set up environment variables**:
-
-Create a `.env` file in the root directory and configure your database and blockchain API settings as per the `.env.example`.
-
-4. **Run database migrations**:
+## Installation
 
 ```bash
-npx prisma migrate dev
+$ npm install
 ```
 
-5. **Start the application**:
+## Running the app
 
 ```bash
-npm run start
+# development
+$ npm run start
+
+# watch mode
+$ npm run start:dev
+
+# production mode
+$ npm run start:prod
 ```
 
-The server will start, and you can begin exploring the API endpoints as documented in the Swagger UI.
+## Test
 
-## Contributing
+```bash
+# unit tests
+$ npm run test
 
-Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+# e2e tests
+$ npm run test:e2e
+
+# test coverage
+$ npm run test:cov
+```
+
+## Support
+
+Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+
+## Stay in touch
+
+- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
+- Website - [https://nestjs.com](https://nestjs.com/)
+- Twitter - [@nestframework](https://twitter.com/nestframework)
 
 ## License
 
-Cryptomarket is [MIT licensed](LICENSE).
+Nest is [MIT licensed](LICENSE).
