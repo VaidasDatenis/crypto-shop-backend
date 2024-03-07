@@ -12,7 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthService = void 0;
 const common_1 = require("@nestjs/common");
 const jwt_1 = require("@nestjs/jwt");
-const user_service_1 = require("../user/user.service");
+const user_service_1 = require("../users/user.service");
 let AuthService = class AuthService {
     constructor(userService, jwtService) {
         this.userService = userService;
@@ -21,7 +21,7 @@ let AuthService = class AuthService {
     async connect(signInDto) {
         let user = await this.userService.findUserByWalletAddress(signInDto.walletAddress);
         if (!user) {
-            user = await this.userService.create(signInDto);
+            user = await this.userService.createUser(signInDto);
         }
         const { walletAddress, ...result } = user;
         const payload = { sub: user.id, walletAddress: user.walletAddress };

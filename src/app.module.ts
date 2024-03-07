@@ -5,10 +5,10 @@ import { DatabaseModule } from './database/database.module';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { MyLoggerModule } from './my-logger/my-logger.module';
-import { UserModule } from './user/user.module';
-import { ItemModule } from './item/item.module';
-import { TransactionModule } from './transaction/transaction.module';
-import { MessageModule } from './message/message.module';
+import { UserModule } from './users/user.module';
+import { ItemModule } from './items/item.module';
+import { TransactionModule } from './transactions/transaction.module';
+import { MessageModule } from './messages/message.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 

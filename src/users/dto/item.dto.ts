@@ -1,5 +1,5 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { IsString, IsDecimal, IsJSON, IsNotEmpty, IsInt } from 'class-validator';
+import { IsString, IsDecimal, IsJSON, IsNotEmpty } from 'class-validator';
 
 export class CreateItemDto {
   @ApiProperty({ example: 'Vintage Lamp', description: 'The title of the item' })
