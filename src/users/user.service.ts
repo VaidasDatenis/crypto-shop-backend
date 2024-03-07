@@ -1,24 +1,37 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
 import { Prisma } from '@prisma/client';
+import { CreateItemDto } from './dto/item.dto';
 
 @Injectable()
 export class UserService {
   constructor(private readonly databaseService: DatabaseService) {}
 
-  async create(createUserDto: Prisma.UserCreateInput) {
+  async createUser(createUserDto: Prisma.UserCreateInput) {
     return this.databaseService.user.create({
       data: createUserDto
     })
   }
 
-  async findAll() {
-    return this.databaseService.user.findMany();
+  async createItemByUser(createItemDto: CreateItemDto, userId: string) {
+    return this.databaseService.item.create({
+      data: {
+        ...createItemDto,
+        sellerId: userId,
+      }
+    })
   }
 
-  async findOne(id: string) {
+  async findAllUserItems(userId: string) {
     return this.databaseService.user.findUnique({
-      where: { id }
+      where: { id: userId },
+      include: { items: true },
+    });
+  }
+
+  async findUserById(userId: string) {
+    return this.databaseService.user.findUnique({
+      where: { id: userId }
     })
   }
 
@@ -28,19 +41,19 @@ export class UserService {
     })
   }
 
-  async update(id: string, updateUserDto: Prisma.UserUpdateInput) {
+  async updateUser(userId: string, updateUserDto: Prisma.UserUpdateInput) {
     return this.databaseService.user.update({
       where: {
-        id,
+        id: userId,
       },
       data: updateUserDto
     })
   }
 
-  async remove(id: string) {
+  async removeUser(userId: string) {
     return this.databaseService.user.delete({
       where: {
-        id,
+        id: userId,
       }
     })
   }
