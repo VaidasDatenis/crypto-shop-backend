@@ -11,6 +11,8 @@ import { TransactionModule } from './transactions/transaction.module';
 import { MessageModule } from './messages/message.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
+import { GroupsModule } from './groups/groups.module';
+import { RolesModule } from './roles/roles.module';
 
 @Module({
   imports: [
@@ -33,7 +35,9 @@ import { ConfigModule } from '@nestjs/config';
     ItemModule,
     TransactionModule,
     MessageModule,
-    AuthModule
+    AuthModule,
+    GroupsModule,
+    RolesModule
   ],
   controllers: [AppController],
   providers: [AppService, {

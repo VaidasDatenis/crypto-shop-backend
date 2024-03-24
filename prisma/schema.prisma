@@ -17,17 +17,20 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(uuid())
-  walletAddress String    @unique
-  walletNames   Json?     // Assuming this will store an object with wallet names and their addresses
-  email         String?   @unique
+  id            String              @id @default(uuid())
+  walletAddress String              @unique
+  walletNames   Json?               // Assuming this will store an object with wallet names and their addresses
+  email         String?             @unique
+  ownedGroups   Group[]             @relation("GroupOwner") // Groups where the user is the owner
+  memberships   Group[]             @relation("GroupMembers") // Groups where the user is a member
   items         Item[]
   buyerTransactions  Transaction[]  @relation("BuyerTransactions")
   sellerTransactions Transaction[]  @relation("SellerTransactions")
-  messagesSent     Message[] @relation("messagesSent")
-  messagesReceived Message[] @relation("messagesReceived")
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  messagesSent     Message[]        @relation("messagesSent")
+  messagesReceived Message[]        @relation("messagesReceived")
+  roles         UserRoles[]         // Connects to the pivot table
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
 }
 
 model Item {
@@ -40,25 +43,41 @@ model Item {
   sellerId    String
   seller      User         @relation(fields: [sellerId], references: [id])
   transactions Transaction[]
+  groupId     String?
+  group       Group?       @relation(fields: [groupId], references: [id], name: "GroupItems")
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 }
 
+model Group {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  isPublic    Boolean  @default(true)
+  imageUrl    String
+  ownerId     String
+  owner       User     @relation(fields: [ownerId], references: [id], name: "GroupOwner")
+  items       Item[]   @relation("GroupItems")
+  members     User[]   @relation("GroupMembers")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
 model Transaction {
-  id         String @id @default(uuid())
+  id         String             @id @default(uuid())
   itemId     String
   buyerId    String
   sellerId   String
-  item       Item     @relation(fields: [itemId], references: [id])
-  buyer      User     @relation(fields: [buyerId], references: [id], name: "BuyerTransactions")
-  seller     User     @relation(fields: [sellerId], references: [id], name: "SellerTransactions")
-  status     String   // e.g., "pending", "completed", "cancelled"
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  item       Item               @relation(fields: [itemId], references: [id])
+  buyer      User               @relation(fields: [buyerId], references: [id], name: "BuyerTransactions")
+  seller     User               @relation(fields: [sellerId], references: [id], name: "SellerTransactions")
+  status     TransactionStatus
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
 }
 
 model Message {
-  id         String @id @default(uuid())
+  id         String   @id @default(uuid())
   content    String
   fromId     String
   toId       String
@@ -67,3 +86,26 @@ model Message {
   createdAt  DateTime @default(now())
 }
 
+model Role {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  description String?
+  users       UserRoles[] // Connects to the pivot table
+}
+
+// Pivot table for many-to-many relationship between User and Role
+model UserRoles {
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String
+  role        Role     @relation(fields: [roleId], references: [id])
+  roleId      String
+
+  @@id([userId, roleId])
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+  SHIPPED
+}
