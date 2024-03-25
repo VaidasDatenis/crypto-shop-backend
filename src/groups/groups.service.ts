@@ -1,25 +1,69 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreateGroupDto, UpdateGroupDto } from './dto/group.dto';
+import { DatabaseService } from 'src/database/database.service';
+import { RolesService } from 'src/roles/roles.service';
+import { UserRoles } from 'src/enums/roles.enum';
 
 @Injectable()
 export class GroupsService {
-  create(createGroupDto: CreateGroupDto) {
-    return 'This action adds a new group';
+  constructor(
+    private readonly databaseService: DatabaseService,
+    private readonly rolesService: RolesService,
+  ) {}
+
+  async findAllGroups() {
+    return this.databaseService.group.findMany();
   }
 
-  findAll() {
-    return `This action returns all groups`;
+  async findAllPublicGroups() {
+    return this.databaseService.group.findMany({
+      where: {
+        isPublic: true,
+      }
+    })
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} group`;
+  async findAllPrivateGroups() {
+    return this.databaseService.group.findMany({
+      where: {
+        isPublic: false,
+      }
+    })
   }
 
-  update(id: number, updateGroupDto: UpdateGroupDto) {
-    return `This action updates a #${id} group`;
+  async createGroupByUser(createGroupDto: CreateGroupDto, userId: string) {
+    const newGroup = await this.databaseService.group.create({
+      data: {
+        ...createGroupDto,
+        ownerId: userId,
+      }
+    });
+    await this.rolesService.assignRolesToUser(userId, [UserRoles.GROUP_OWNER]);
+    return newGroup;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} group`;
+  // async joinPublicGroup(groupId: string, userId: string) {
+  //   // Assuming logic to add the user to the group goes here
+
+  //   // Automatically assign the GROUP_MEMBER role to the user
+  //   await this.rolesService.assignRolesToUser(userId, [UserRoles.GROUP_MEMBER]);
+  // }
+
+  async deleteGroupByOwner(groupId: string, userId: string) {
+    const group = await this.databaseService.group.findUnique({
+      where: { id: groupId },
+    });
+
+    if (!group) {
+      throw new NotFoundException(`Group with ID "${groupId}" not found.`);
+    }
+
+    if (group.ownerId !== userId) {
+      throw new UnauthorizedException('You are not authorized to delete this group.');
+    }
+
+    await this.databaseService.group.delete({
+      where: { id: groupId },
+    });
   }
 }

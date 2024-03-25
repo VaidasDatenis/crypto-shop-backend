@@ -11,7 +11,7 @@ export class AuthController {
   @Public()
   @HttpCode(HttpStatus.OK)
   @Post('connect')
-  signIn(@Body() signInDto: Prisma.UserCreateInput) {
+  signIn(@Body() signInDto: AuthDto) {
     return this.authService.connect(signInDto);
   }
 }

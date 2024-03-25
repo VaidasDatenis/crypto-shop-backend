@@ -20,6 +20,9 @@ const transaction_module_1 = require("./transactions/transaction.module");
 const message_module_1 = require("./messages/message.module");
 const auth_module_1 = require("./auth/auth.module");
 const config_1 = require("@nestjs/config");
+const groups_module_1 = require("./groups/groups.module");
+const roles_module_1 = require("./roles/roles.module");
+const user_roles_module_1 = require("./user-roles/user-roles.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -45,7 +48,10 @@ exports.AppModule = AppModule = __decorate([
             item_module_1.ItemModule,
             transaction_module_1.TransactionModule,
             message_module_1.MessageModule,
-            auth_module_1.AuthModule
+            auth_module_1.AuthModule,
+            groups_module_1.GroupsModule,
+            roles_module_1.RolesModule,
+            user_roles_module_1.UserRolesModule
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService, {

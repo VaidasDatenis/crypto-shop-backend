@@ -14,7 +14,7 @@ const user_module_1 = require("../users/user.module");
 const jwt_1 = require("@nestjs/jwt");
 const constants_1 = require("./constants");
 const core_1 = require("@nestjs/core");
-const auth_guard_1 = require("./auth.guard");
+const auth_guard_1 = require("../guards/auth.guard");
 let AuthModule = class AuthModule {
 };
 exports.AuthModule = AuthModule;

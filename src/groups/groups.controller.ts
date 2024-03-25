@@ -1,33 +1,38 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { GroupsService } from './groups.service';
 import { CreateGroupDto, UpdateGroupDto } from './dto/group.dto';
+import { GetUser } from 'src/decorators/get-user.decorator';
+import { AuthGuard } from 'src/guards/auth.guard';
+import { RolesGuard } from 'src/guards/roles.guard';
 
 @Controller('groups')
 export class GroupsController {
   constructor(private readonly groupsService: GroupsService) {}
 
-  @Post()
-  create(@Body() createGroupDto: CreateGroupDto) {
-    return this.groupsService.create(createGroupDto);
+  @Get()
+  findAllGroups() {
+    return this.groupsService.findAllGroups();
   }
 
   @Get()
-  findAll() {
-    return this.groupsService.findAll();
+  findAllPublicGroups() {
+    return this.groupsService.findAllPublicGroups();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.groupsService.findOne(+id);
+  @Get()
+  findAllPrivateGroups() {
+    return this.groupsService.findAllPrivateGroups();
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateGroupDto: UpdateGroupDto) {
-    return this.groupsService.update(+id, updateGroupDto);
+  @Post(':userId/group')
+  @UseGuards(AuthGuard, RolesGuard)
+  createGroupByUser(@Param('userId') userId: string, @Body() groupDto: CreateGroupDto) {
+    return this.groupsService.createGroupByUser(groupDto, userId);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.groupsService.remove(+id);
+  @UseGuards(AuthGuard, RolesGuard)
+  deleteGroup(@Param('id') id: string, @GetUser('id') userId: string) {
+    return this.groupsService.deleteGroupByOwner(id, userId);
   }
 }

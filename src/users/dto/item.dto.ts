@@ -30,6 +30,10 @@ export class CreateItemDto {
   @ApiProperty({ example: 1 })
   @IsString()
   sellerId: string;
+
+  @ApiProperty({ example: 1 })
+  @IsString()
+  groupId: string;
 }
 
 export class UpdateItemDto extends PartialType(CreateItemDto) {}

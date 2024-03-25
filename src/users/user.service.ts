@@ -1,16 +1,41 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
-import { Prisma } from '@prisma/client';
 import { CreateItemDto } from './dto/item.dto';
+import { RolesService } from 'src/roles/roles.service';
+import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
+import { UserRoles } from 'src/enums/roles.enum';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(
+    private readonly databaseService: DatabaseService,
+    private readonly rolesService: RolesService,
+  ) {}
 
-  async createUser(createUserDto: Prisma.UserCreateInput) {
-    return this.databaseService.user.create({
-      data: createUserDto
-    })
+  async createUser(createUserDto: CreateUserDto, requestorId?: string) {
+    // Destructure the DTO to separate user data from roles, if they exist
+    const { roles, ...userData } = createUserDto;
+    // Create the user without roles first
+    const newUser = await this.databaseService.user.create({
+        data: userData,
+    });
+    // Determine the roles to be assigned
+    let rolesToAssign = ['USER']; // Default role for all new users
+    // If the requestorId is provided, check if the requestor is an ADMIN
+    if (requestorId) {
+      const requestorRoles = await this.rolesService.getRolesByUserId(requestorId);
+      const isAdmin = requestorRoles.some(role => role.name === UserRoles.ADMIN);
+      // If an ADMIN is creating the user and specific roles are provided, use those instead
+      if (isAdmin && roles && roles.includes(UserRoles.ADMIN)) {
+        rolesToAssign = roles;
+      } else if (!isAdmin && roles && roles.includes(UserRoles.ADMIN)) {
+        // Prevent non-ADMIN users from creating ADMIN users
+        throw new ForbiddenException('Only ADMIN can assign ADMIN role.');
+      }
+    }
+    // Assign the determined roles to the new user
+    await this.rolesService.assignRolesToUser(newUser.id, rolesToAssign);
+    return newUser;
   }
 
   async createItemByUser(createItemDto: CreateItemDto, userId: string) {
@@ -41,13 +66,28 @@ export class UserService {
     })
   }
 
-  async updateUser(userId: string, updateUserDto: Prisma.UserUpdateInput) {
-    return this.databaseService.user.update({
-      where: {
-        id: userId,
-      },
-      data: updateUserDto
-    })
+  async updateUser(userId: string, updateUserDto: UpdateUserDto, requestorId: string) {
+    const { roles, ...userData } = updateUserDto;
+    // Check if the requestor has ADMIN privileges before allowing role updates
+    const requestorRoles = await this.rolesService.getRolesByUserId(requestorId);
+    const isAdmin = requestorRoles.some(role => role.name === UserRoles.ADMIN);
+
+    // Update user data excluding roles
+    const updatedUser = await this.databaseService.user.update({
+      where: { id: userId },
+      data: userData,
+    });
+
+    // If roles are provided and the requestor is ADMIN, update the user's roles
+    if (roles && roles.length > 0 && isAdmin) {
+      await this.databaseService.userRoles.deleteMany({
+          where: { userId },
+      });
+      await this.rolesService.assignRolesToUser(userId, roles);
+    } else if (roles && roles.length > 0) {
+      throw new UnauthorizedException('Only ADMIN can update roles.');
+    }
+    return updatedUser;
   }
 
   async removeUser(userId: string) {
