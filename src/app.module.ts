@@ -13,6 +13,7 @@ import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { GroupsModule } from './groups/groups.module';
 import { RolesModule } from './roles/roles.module';
+import { UserRolesModule } from './user-roles/user-roles.module';
 
 @Module({
   imports: [
@@ -37,7 +38,8 @@ import { RolesModule } from './roles/roles.module';
     MessageModule,
     AuthModule,
     GroupsModule,
-    RolesModule
+    RolesModule,
+    UserRolesModule
   ],
   controllers: [AppController],
   providers: [AppService, {

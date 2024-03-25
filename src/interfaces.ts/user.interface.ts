@@ -1,6 +1,8 @@
+import { UserRoles } from "src/enums/roles.enum";
 import { Item } from "./item.interface";
 import { Message } from "./message.interface";
 import { Transaction } from "./transaction.interface";
+import { Group } from "./group.interface";
 
 export interface User {
   id: number;
@@ -12,6 +14,9 @@ export interface User {
   sellerTransactions: Transaction[];
   messagesSent: Message[];
   messagesReceived: Message[];
+  ownedGroups?: Group[];
+  memberships?: Group[];
+  roles: UserRoles[];
   createdAt: Date;
   updatedAt: Date;
 }

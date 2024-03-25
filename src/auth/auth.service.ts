@@ -1,7 +1,9 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Prisma } from '@prisma/client';
+import { CreateUserDto } from 'src/users/dto/user.dto';
 import { UserService } from 'src/users/user.service';
+import { AuthDto } from './dto/auth.dto';
 
 @Injectable()
 export class AuthService {
@@ -10,7 +12,7 @@ export class AuthService {
     private jwtService: JwtService,
     ) {}
 
-  async connect(signInDto: Prisma.UserCreateInput): Promise<{ access_token: string }> {
+  async connect(signInDto: AuthDto): Promise<{ access_token: string }> {
     let user = await this.userService.findUserByWalletAddress(signInDto.walletAddress);
     // If user doesn't exist, create a new user record
     if (!user) {

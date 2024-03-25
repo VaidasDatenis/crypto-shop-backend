@@ -15,8 +15,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthController = void 0;
 const common_1 = require("@nestjs/common");
 const auth_service_1 = require("./auth.service");
+const auth_dto_1 = require("./dto/auth.dto");
 const constants_1 = require("./constants");
-const client_1 = require("@prisma/client");
 let AuthController = class AuthController {
     constructor(authService) {
         this.authService = authService;
@@ -32,7 +32,7 @@ __decorate([
     (0, common_1.Post)('connect'),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [auth_dto_1.AuthDto]),
     __metadata("design:returntype", void 0)
 ], AuthController.prototype, "signIn", null);
 exports.AuthController = AuthController = __decorate([

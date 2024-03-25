@@ -1,9 +1,9 @@
 import { AuthService } from './auth.service';
-import { Prisma } from '@prisma/client';
+import { AuthDto } from './dto/auth.dto';
 export declare class AuthController {
     private authService;
     constructor(authService: AuthService);
-    signIn(signInDto: Prisma.UserCreateInput): Promise<{
+    signIn(signInDto: AuthDto): Promise<{
         access_token: string;
     }>;
 }
