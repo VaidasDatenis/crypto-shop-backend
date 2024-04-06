@@ -3,6 +3,7 @@ import { MessageService } from './message.service';
 import { MyLoggerService } from 'src/my-logger/my-logger.service';
 import { Prisma } from '@prisma/client';
 import { SkipThrottle, Throttle } from '@nestjs/throttler';
+import { ExcludeSoftDeleted } from 'src/decorators/exclude-soft-deleted.decorator';
 
 @Controller('message')
 export class MessageController {
@@ -16,6 +17,7 @@ export class MessageController {
 
   @SkipThrottle({ default: false })
   @Get()
+  @ExcludeSoftDeleted(true)
   findAll(@Ip() ip: string) {
     this.logger.log(`Req User findAll()\t${ip}`, MessageController.name);
     return this.messageService.findAll();
@@ -23,6 +25,7 @@ export class MessageController {
 
   @Throttle({ short: { ttl: 1000, limit: 1 }})
   @Get(':id')
+  @ExcludeSoftDeleted(true)
   findOne(@Param('id') id: string) {
     return this.messageService.findOne(id);
   }

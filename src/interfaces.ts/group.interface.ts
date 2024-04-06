@@ -11,4 +11,5 @@ export interface Group {
   members: User[];
   createdAt: Date;
   updatedAt: Date;
+  deletedAt?: Date;
 }

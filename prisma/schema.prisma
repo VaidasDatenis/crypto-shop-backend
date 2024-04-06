@@ -31,13 +31,14 @@ model User {
   roles         UserRoles[]         // Connects to the pivot table
   createdAt     DateTime            @default(now())
   updatedAt     DateTime            @updatedAt
+  deletedAt     DateTime?
 }
 
 model Item {
   id          String       @id @default(uuid())
   title       String
   description String
-  images      Json         // URLs to images, assuming JSON array
+  images      Json?         // URLs to images, assuming JSON array
   price       Decimal      // Adjusted to use Decimal for accurate currency representation
   currency    String       // The cryptocurrency in which the price is denoted
   sellerId    String
@@ -47,6 +48,7 @@ model Item {
   group       Group?       @relation(fields: [groupId], references: [id], name: "GroupItems")
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
+  deletedAt   DateTime?
 }
 
 model Group {
@@ -54,13 +56,14 @@ model Group {
   name        String
   description String?
   isPublic    Boolean  @default(true)
-  imageUrl    String
+  imageUrl    String?
   ownerId     String
   owner       User     @relation(fields: [ownerId], references: [id], name: "GroupOwner")
   items       Item[]   @relation("GroupItems")
   members     User[]   @relation("GroupMembers")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
 }
 
 model Transaction {
@@ -74,6 +77,7 @@ model Transaction {
   status     TransactionStatus
   createdAt  DateTime           @default(now())
   updatedAt  DateTime           @updatedAt
+  deletedAt  DateTime?
 }
 
 model Message {
@@ -84,6 +88,7 @@ model Message {
   from       User     @relation(fields: [fromId], references: [id], name: "messagesSent")
   to         User     @relation(fields: [toId], references: [id], name: "messagesReceived")
   createdAt  DateTime @default(now())
+  deletedAt  DateTime?
 }
 
 model Role {

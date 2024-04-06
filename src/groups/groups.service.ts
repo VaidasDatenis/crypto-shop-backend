@@ -1,5 +1,5 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { CreateGroupDto, UpdateGroupDto } from './dto/group.dto';
+import { Injectable } from '@nestjs/common';
+import { CreateGroupDto } from './dto/group.dto';
 import { DatabaseService } from 'src/database/database.service';
 import { RolesService } from 'src/roles/roles.service';
 import { UserRoles } from 'src/enums/roles.enum';
@@ -49,21 +49,35 @@ export class GroupsService {
   //   await this.rolesService.assignRolesToUser(userId, [UserRoles.GROUP_MEMBER]);
   // }
 
-  async deleteGroupByOwner(groupId: string, userId: string) {
-    const group = await this.databaseService.group.findUnique({
-      where: { id: groupId },
+  async removeUserFromGroupMembers(userId: string): Promise<void> {
+    // Assuming a direct relation managed by Prisma, where `members` is a field on Group
+    const memberships = await this.databaseService.group.findMany({
+      where: {
+        members: {
+          some: { id: userId },
+        },
+      },
+      select: { id: true },
     });
 
-    if (!group) {
-      throw new NotFoundException(`Group with ID "${groupId}" not found.`);
-    }
+    await Promise.all(
+      memberships.map(group =>
+        this.databaseService.group.update({
+          where: { id: group.id },
+          data: {
+            members: {
+              disconnect: { id: userId },
+            },
+          },
+        })
+      )
+    );
+  }
 
-    if (group.ownerId !== userId) {
-      throw new UnauthorizedException('You are not authorized to delete this group.');
-    }
-
-    await this.databaseService.group.delete({
-      where: { id: groupId },
+  async markOwnedGroupsAsDeleted(ownerId: string) {
+    await this.databaseService.group.updateMany({
+      where: { ownerId },
+      data: { deletedAt: new Date() },
     });
   }
 }
