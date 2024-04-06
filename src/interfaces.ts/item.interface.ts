@@ -13,4 +13,5 @@ export interface Item {
   transactions: Transaction[];
   createdAt: Date;
   updatedAt: Date;
+  deletedAt?: Date;
 }

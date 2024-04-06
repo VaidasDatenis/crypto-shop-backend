@@ -4,12 +4,14 @@ import { CreateItemDto } from './dto/item.dto';
 import { RolesService } from 'src/roles/roles.service';
 import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
 import { UserRoles } from 'src/enums/roles.enum';
+import { GroupsService } from 'src/groups/groups.service';
 
 @Injectable()
 export class UserService {
   constructor(
     private readonly databaseService: DatabaseService,
     private readonly rolesService: RolesService,
+    private readonly groupsService: GroupsService,
   ) {}
 
   async createUser(createUserDto: CreateUserDto, requestorId?: string) {
@@ -90,11 +92,29 @@ export class UserService {
     return updatedUser;
   }
 
-  async removeUser(userId: string) {
-    return this.databaseService.user.delete({
-      where: {
-        id: userId,
-      }
-    })
+  async softDeleteUser(userId: string) {
+    const now = new Date();
+    await this.databaseService.user.update({
+      where: { id: userId },
+      data: { deletedAt: now },
+    });
+    // Cascade the soft delete to items & messages
+    await this.databaseService.item.updateMany({
+      where: { sellerId: userId },
+      data: { deletedAt: now },
+    });
+
+     await this.databaseService.message.updateMany({
+      where: { fromId: userId },
+      data: { deletedAt: now },
+    });
+  }
+
+  async softDeleteUserAndCleanup(userId: string): Promise<void> {
+    await this.databaseService.$transaction(async () => {
+      await this.softDeleteUser(userId);
+      await this.groupsService.removeUserFromGroupMembers(userId);
+      await this.groupsService.markOwnedGroupsAsDeleted(userId);
+    });
   }
 }

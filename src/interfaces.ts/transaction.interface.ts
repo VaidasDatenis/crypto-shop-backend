@@ -12,4 +12,5 @@ export interface Transaction {
   status: string;
   createdAt: Date;
   updatedAt: Date;
+  deletedAt?: Date;
 }

@@ -11,6 +11,7 @@ import { RolesGuard } from 'src/guards/roles.guard';
 import { GetUser } from 'src/decorators/get-user.decorator';
 import { AuthGuard } from 'src/guards/auth.guard';
 import { AuthRequest } from 'src/interfaces.ts/auth-request.interface';
+import { ExcludeSoftDeleted } from 'src/decorators/exclude-soft-deleted.decorator';
 
 @Controller('user')
 export class UserController {
@@ -30,6 +31,7 @@ export class UserController {
 
   @Throttle({ short: { ttl: 1000, limit: 1 }})
   @Get(':userId')
+  @ExcludeSoftDeleted(true)
   findUserById(@Param('userId',) userId: string) {
     return this.userService.findUserById(userId);
   }
@@ -45,6 +47,7 @@ export class UserController {
   }
 
   @Get(':userId/items')
+  @ExcludeSoftDeleted(true)
   findAllUserItems(@Param('userId') userId: string) {
     return this.userService.findAllUserItems(userId);
   }
@@ -62,6 +65,6 @@ export class UserController {
 
   @Delete(':userId')
   removeUser(@Param('userId') userId: string) {
-    return this.userService.removeUser(userId);
+    return this.userService.softDeleteUserAndCleanup(userId);
   }
 }

@@ -3,6 +3,7 @@ import { ItemService } from './item.service';
 import { MyLoggerService } from 'src/my-logger/my-logger.service';
 import { SkipThrottle, Throttle } from '@nestjs/throttler';
 import { Public } from 'src/auth/constants';
+import { ExcludeSoftDeleted } from 'src/decorators/exclude-soft-deleted.decorator';
 
 @Controller('items')
 export class ItemController {
@@ -12,6 +13,7 @@ export class ItemController {
   @Public()
   @SkipThrottle({ default: false })
   @Get()
+  @ExcludeSoftDeleted(true)
   findAll(@Ip() ip: string) {
     this.logger.log(`Req User findAll()\t${ip}`, ItemController.name);
     return this.itemService.findAll();
