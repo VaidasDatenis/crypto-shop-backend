@@ -43,7 +43,7 @@ export class ItemController {
   }
 
   @Post(':userId/item')
-  @Roles(UserRoles.USER)
+  @Roles(UserRoles.ADMIN, UserRoles.USER)
   @UseGuards(AuthGuard, RolesGuard)
   createItemByUser(@Param('userId') userId: string, @Body() itemDto: CreateItemDto) {
     return this.itemService.createItemByUser(itemDto, userId);

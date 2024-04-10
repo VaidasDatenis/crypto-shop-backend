@@ -5,10 +5,12 @@ import { CreateGroupDto, UpdateGroupDto } from './dto/group.dto';
 import { JwtService } from '@nestjs/jwt';
 import { CreateItemDto } from 'src/items/dto/item.dto';
 import { Prisma } from '@prisma/client';
+import { RolesService } from 'src/roles/roles.service';
 
 describe('GroupsController', () => {
   let controller: GroupsController;
   let service: jest.Mocked<GroupsService>;
+  let rolesService: RolesService;
   let jwtService: JwtService;
 
   beforeEach(async () => {
@@ -32,6 +34,10 @@ describe('GroupsController', () => {
           },
         },
         {
+          provide: RolesService,
+          useValue: {},
+        },
+        {
           provide: JwtService,
           useValue: {},
         },
@@ -40,6 +46,7 @@ describe('GroupsController', () => {
 
     controller = module.get<GroupsController>(GroupsController);
     service = module.get(GroupsService) as jest.Mocked<GroupsService>;
+    rolesService = module.get<RolesService>(RolesService);
     jwtService = module.get<JwtService>(JwtService);
   });
 

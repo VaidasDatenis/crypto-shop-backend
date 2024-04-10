@@ -5,10 +5,12 @@ import { CreateItemDto, UpdateItemDto } from './dto/item.dto';
 import { MyLoggerService } from '../my-logger/my-logger.service';
 import { Prisma } from '@prisma/client';
 import { JwtService } from '@nestjs/jwt';
+import { RolesService } from 'src/roles/roles.service';
 
 describe('ItemController', () => {
   let controller: ItemController;
   let service: ItemService;
+  let rolesService: RolesService;
   let loggerService: MyLoggerService;
   let jwtService: JwtService;
 
@@ -28,6 +30,10 @@ describe('ItemController', () => {
           },
         },
         {
+          provide: RolesService,
+          useValue: {},
+        },
+        {
           provide: MyLoggerService,
           useValue: {},
         },
@@ -40,6 +46,7 @@ describe('ItemController', () => {
 
     controller = module.get<ItemController>(ItemController);
     service = module.get<ItemService>(ItemService);
+    rolesService = module.get<RolesService>(RolesService);
     loggerService = module.get<MyLoggerService>(MyLoggerService);
     jwtService = module.get<JwtService>(JwtService);
   });

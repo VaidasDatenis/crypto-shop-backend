@@ -7,12 +7,12 @@ import { UserRoles } from 'src/enums/roles.enum';
 export class RolesService {
   constructor(private readonly databaseService: DatabaseService) {}
 
-  async getRolesByUserId(userId: string) {
+  async getRolesByUserId(userId: string): Promise<string[]> {
     const userRoles = await this.databaseService.userRoles.findMany({
       where: { userId, },
       include: { role: true },
     });
-    return userRoles.map(ur => ur.role);
+    return userRoles.map(userRole => userRole.role.name);
   }
 
   async findRoleByName(roleName: string) {
