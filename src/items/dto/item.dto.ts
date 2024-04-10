@@ -13,14 +13,14 @@ export class CreateItemDto {
   description: string;
 
   @ApiProperty({ example: '[\"http://example.com/image1.jpg\", \"http://example.com/image2.jpg\"]', description: 'JSON array of image URLs' })
-  @IsNotEmpty()
+  // @IsNotEmpty() TODO: uncomment when dealt with images storage
   @IsJSON()
-  images: string; // You might need to parse/validate this as JSON in your service if you're storing it directly as JSON in the database.
+  images?: string;
 
-  @ApiProperty({ example: '100.00', description: 'The price of the item in the specified cryptocurrency' })
+  @ApiProperty({ example: 100.00, description: 'The price of the item in the specified cryptocurrency' })
   @IsNotEmpty()
   @IsDecimal()
-  price: string; // or use number if you handle conversion to Decimal type in your service
+  price: string;
 
   @ApiProperty({ example: 'ETH', description: 'The cryptocurrency in which the price is denoted' })
   @IsNotEmpty()
@@ -33,7 +33,7 @@ export class CreateItemDto {
 
   @ApiProperty({ example: 1 })
   @IsString()
-  groupId: string;
+  groupId?: string;
 }
 
 export class UpdateItemDto extends PartialType(CreateItemDto) {}

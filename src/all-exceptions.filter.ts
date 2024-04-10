@@ -4,11 +4,11 @@ import { Request, Response } from "express";
 import { MyLoggerService } from "./my-logger/my-logger.service";
 import { PrismaClientValidationError } from "@prisma/client/runtime/library";
 
-type MyResponceObj = {
+type MyResponseObj = {
   statusCode: number,
   timeStamp: string,
   path: string,
-  responce: string | object,
+  response: string | object,
 }
 
 @Catch()
@@ -17,26 +17,26 @@ export class AllExceptionsFilter extends BaseExceptionFilter {
 
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
-    const responce = ctx.getResponse<Response>();
+    const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
-    const myResponceObj: MyResponceObj = {
+    const myResponseObj: MyResponseObj = {
       statusCode: 500,
       timeStamp: new Date().toISOString(),
       path: request.url,
-      responce: '',
+      response: '',
     }
     if (exception instanceof HttpException) {
-      myResponceObj.statusCode = exception.getStatus();
-      myResponceObj.responce = exception.getResponse();
+      myResponseObj.statusCode = exception.getStatus();
+      myResponseObj.response = exception.getResponse();
     } else if (exception instanceof PrismaClientValidationError) {
-      myResponceObj.statusCode = 422;
-      myResponceObj.responce = exception.message.replaceAll(/\n/g, '');
+      myResponseObj.statusCode = 422;
+      myResponseObj.response = exception.message.replaceAll(/\n/g, '');
     } else {
-      myResponceObj.statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
-      myResponceObj.responce = 'Internal Server Error';
+      myResponseObj.statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
+      myResponseObj.response = 'Internal Server Error';
     }
-    responce.status(myResponceObj.statusCode).json(myResponceObj);
-    this.logger.error(myResponceObj.responce, AllExceptionsFilter.name);
+    response.status(myResponseObj.statusCode).json(myResponseObj);
+    this.logger.error(myResponseObj.response, AllExceptionsFilter.name);
     super.catch(exception, host);
   }
 }

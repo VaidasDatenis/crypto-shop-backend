@@ -19,16 +19,16 @@ datasource db {
 model User {
   id            String              @id @default(uuid())
   walletAddress String              @unique
-  walletNames   Json?               // Assuming this will store an object with wallet names and their addresses
+  walletNames   Json?
   email         String?             @unique
-  ownedGroups   Group[]             @relation("GroupOwner") // Groups where the user is the owner
-  memberships   Group[]             @relation("GroupMembers") // Groups where the user is a member
+  ownedGroups   Group[]             @relation("GroupOwner")
+  memberships   Group[]             @relation("GroupMembers")
   items         Item[]
   buyerTransactions  Transaction[]  @relation("BuyerTransactions")
   sellerTransactions Transaction[]  @relation("SellerTransactions")
   messagesSent     Message[]        @relation("messagesSent")
   messagesReceived Message[]        @relation("messagesReceived")
-  roles         UserRoles[]         // Connects to the pivot table
+  roles         UserRoles[]
   createdAt     DateTime            @default(now())
   updatedAt     DateTime            @updatedAt
   deletedAt     DateTime?
@@ -38,9 +38,9 @@ model Item {
   id          String       @id @default(uuid())
   title       String
   description String
-  images      Json?         // URLs to images, assuming JSON array
-  price       Decimal      // Adjusted to use Decimal for accurate currency representation
-  currency    String       // The cryptocurrency in which the price is denoted
+  images      Json?        // TODO: required field after dealt with images storage
+  price       Decimal
+  currency    String
   sellerId    String
   seller      User         @relation(fields: [sellerId], references: [id])
   transactions Transaction[]
@@ -54,13 +54,14 @@ model Item {
 model Group {
   id          String   @id @default(uuid())
   name        String
-  description String?
+  description String?  // TODO: required field after dealt with images storage
   isPublic    Boolean  @default(true)
-  imageUrl    String?
+  imageUrl    String?  // TODO: required field after dealt with images storage
   ownerId     String
   owner       User     @relation(fields: [ownerId], references: [id], name: "GroupOwner")
   items       Item[]   @relation("GroupItems")
   members     User[]   @relation("GroupMembers")
+  userRoles   UserRoles[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   deletedAt   DateTime?
@@ -95,17 +96,20 @@ model Role {
   id          String    @id @default(uuid())
   name        String    @unique
   description String?
-  users       UserRoles[] // Connects to the pivot table
+  users       UserRoles[]
 }
 
 // Pivot table for many-to-many relationship between User and Role
 model UserRoles {
-  user        User     @relation(fields: [userId], references: [id])
-  userId      String
-  role        Role     @relation(fields: [roleId], references: [id])
-  roleId      String
+  id        String   @id @default(uuid())
+  userId    String
+  roleId    String
+  groupId   String?
+  user      User     @relation(fields: [userId], references: [id])
+  role      Role     @relation(fields: [roleId], references: [id])
+  group     Group?   @relation(fields: [groupId], references: [id])
 
-  @@id([userId, roleId])
+  @@unique([userId, roleId, groupId])
 }
 
 enum TransactionStatus {

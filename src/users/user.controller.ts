@@ -2,7 +2,6 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } fro
 import { UserService } from './user.service';
 import { MyLoggerService } from 'src/my-logger/my-logger.service';
 import { Throttle } from '@nestjs/throttler';
-import { CreateItemDto } from './dto/item.dto';
 import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
 import { RolesService } from 'src/roles/roles.service';
 import { Roles } from 'src/decorators/roles.decorator';
@@ -31,12 +30,15 @@ export class UserController {
 
   @Throttle({ short: { ttl: 1000, limit: 1 }})
   @Get(':userId')
+  @Roles(UserRoles.ADMIN, UserRoles.USER)
+  @UseGuards(AuthGuard, RolesGuard)
   @ExcludeSoftDeleted(true)
   findUserById(@Param('userId',) userId: string) {
     return this.userService.findUserById(userId);
   }
 
   @Patch(':userId')
+  @Roles(UserRoles.ADMIN, UserRoles.USER)
   @UseGuards(AuthGuard, RolesGuard)
   updateUser(
     @Param('userId') userId: string,
@@ -46,24 +48,16 @@ export class UserController {
     return this.userService.updateUser(userId, updateUserDto, requestorId);
   }
 
-  @Get(':userId/items')
-  @ExcludeSoftDeleted(true)
-  findAllUserItems(@Param('userId') userId: string) {
-    return this.userService.findAllUserItems(userId);
-  }
-
-  @Post(':userId/item')
-  createItemByUser(@Param('userId') userId: string, @Body() itemDto: CreateItemDto) {
-    return this.userService.createItemByUser(itemDto, userId);
-  }
-
   @Get(':userId/roles')
   @Roles(UserRoles.ADMIN)
+  @UseGuards(AuthGuard, RolesGuard)
   getRolesByUserId(@Param('userId') userId: string) {
     return this.rolesService.getRolesByUserId(userId);
   }
 
   @Delete(':userId')
+  @Roles(UserRoles.ADMIN, UserRoles.USER)
+  @UseGuards(AuthGuard, RolesGuard)
   removeUser(@Param('userId') userId: string) {
     return this.userService.softDeleteUserAndCleanup(userId);
   }

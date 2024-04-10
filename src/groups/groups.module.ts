@@ -2,12 +2,12 @@ import { Module } from '@nestjs/common';
 import { GroupsService } from './groups.service';
 import { GroupsController } from './groups.controller';
 import { DatabaseModule } from 'src/database/database.module';
-import { RolesService } from 'src/roles/roles.service';
+import { RolesModule } from 'src/roles/roles.module';
 
 @Module({
-  imports: [DatabaseModule],
+  imports: [RolesModule, DatabaseModule],
   controllers: [GroupsController],
-  providers: [GroupsService, RolesService],
+  providers: [GroupsService],
   exports: [GroupsService],
 })
 export class GroupsModule {}

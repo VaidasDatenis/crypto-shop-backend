@@ -18,4 +18,5 @@ export interface User {
     roles: UserRoles[];
     createdAt: Date;
     updatedAt: Date;
+    deletedAt?: Date;
 }

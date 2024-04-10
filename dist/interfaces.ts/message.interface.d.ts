@@ -7,4 +7,6 @@ export interface Message {
     from: User;
     to: User;
     createdAt: Date;
+    updatedAt: Date;
+    deletedAt?: Date;
 }
