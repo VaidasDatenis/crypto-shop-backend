@@ -5,7 +5,10 @@
 
 # Logs
 logs
+logs/myLogFile.log
 /logs
+/logs/*
+/logs/myLogFile.log
 *.log
 npm-debug.log*
 pnpm-debug.log*

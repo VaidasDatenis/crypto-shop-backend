@@ -2,72 +2,38 @@
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
 </p>
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+# Cryptomarket
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+This project is a backend service built with [NestJS](http://nestjs.com/), designed to serve as the backbone for a marketplace platform that amalgamates concepts from Vinted and Shopify. It supports both private and public groups, catering to a broad range of use cases from casual sellers and buyers with shared interests to retail sellers focusing on their brands.
 
-## Description
+## Features
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- **Public Groups:** Open for anyone to join, public groups are communities based around common interests. Members can contribute by adding items to the group, fostering a vibrant marketplace where unique finds and shared interests converge.
 
-## Installation
+- **Private Groups:** Tailored for retail sellers, private groups offer an exclusive space for brand owners to showcase and sell their products. These groups serve as bespoke boutiques for brands seeking a dedicated audience.
 
-```bash
-$ npm install
-```
+- **Fully Tested:** The project places a high emphasis on reliability and maintainability, underscored by comprehensive unit and service tests. This ensures each component functions as expected, providing a solid foundation as the project scales.
 
-## Running the app
+- **Future Enhancements:** Planned expansions include integrating messaging and transaction flows to facilitate seamless interactions and transactions between users. Upon completion, the project will undergo extensive end-to-end and integration testing to guarantee a flawless user experience.
+
+## Payment System with Stable Coins
+
+A distinctive feature of this marketplace is its adoption of stable coins for transactions, promoting a secure and stable payment environment, without any need for third-parties or middle-man (such as banks). For more details on the payment system implementation, visit the dedicated repository:
+
+- [Cryptomarket Solidity Project](https://github.com/VaidasDatenis/crypto-shop-solidity)
+
+## Frontend Implementation
+
+To complement the backend, the project's frontend is developed using Angular 17, providing a modern and responsive user interface. Explore the frontend repository (not finished):
+
+- [Cryptomarket Frontend](https://github.com/VaidasDatenis/crypto-shop-frontend)
+
+## Getting Started
+
+To get started with the NestJS backend project, ensure you have Node.js and NestJS CLI installed. Clone the project repository, install dependencies, and run the development server:
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
-```
-
-## Test
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](LICENSE).
+git clone https://github.com/VaidasDatenis/your-nestjs-backend-repo.git
+cd your-nestjs-backend-repo
+npm install
+npm run start:dev
