@@ -27,6 +27,7 @@ let AuthService = class AuthService {
         const payload = { sub: user.id, walletAddress: user.walletAddress };
         return {
             access_token: await this.jwtService.signAsync(payload),
+            userId: user.id
         };
     }
 };

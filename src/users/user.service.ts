@@ -1,6 +1,5 @@
 import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
-import { CreateItemDto } from './dto/item.dto';
 import { RolesService } from 'src/roles/roles.service';
 import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
 import { UserRoles } from 'src/enums/roles.enum';
@@ -15,45 +14,31 @@ export class UserService {
   ) {}
 
   async createUser(createUserDto: CreateUserDto, requestorId?: string) {
-    // Destructure the DTO to separate user data from roles, if they exist
-    const { roles, ...userData } = createUserDto;
+    const { roles = [], ...userData } = createUserDto;
     // Create the user without roles first
     const newUser = await this.databaseService.user.create({
         data: userData,
     });
     // Determine the roles to be assigned
-    let rolesToAssign = ['USER']; // Default role for all new users
-    // If the requestorId is provided, check if the requestor is an ADMIN
+    let rolesToAssign: UserRoles[] = [UserRoles.USER];
     if (requestorId) {
-      const requestorRoles = await this.rolesService.getRolesByUserId(requestorId);
-      const isAdmin = requestorRoles.some(role => role.name === UserRoles.ADMIN);
-      // If an ADMIN is creating the user and specific roles are provided, use those instead
-      if (isAdmin && roles && roles.includes(UserRoles.ADMIN)) {
-        rolesToAssign = roles;
+      const isAdmin = await this.rolesService.isUserAdmin(requestorId);
+      if (isAdmin && roles.includes(UserRoles.ADMIN)) {
+        rolesToAssign = roles.map(role => {
+          if (Object.values(UserRoles).includes(role as UserRoles)) {
+            return role as UserRoles;
+          }
+          throw new Error(`Invalid role: ${role}`);
+        });
       } else if (!isAdmin && roles && roles.includes(UserRoles.ADMIN)) {
-        // Prevent non-ADMIN users from creating ADMIN users
         throw new ForbiddenException('Only ADMIN can assign ADMIN role.');
       }
     }
     // Assign the determined roles to the new user
-    await this.rolesService.assignRolesToUser(newUser.id, rolesToAssign);
+    for (const roleName of rolesToAssign) {
+      await this.rolesService.assignRoleToUser(newUser.id, roleName);
+    }
     return newUser;
-  }
-
-  async createItemByUser(createItemDto: CreateItemDto, userId: string) {
-    return this.databaseService.item.create({
-      data: {
-        ...createItemDto,
-        sellerId: userId,
-      }
-    })
-  }
-
-  async findAllUserItems(userId: string) {
-    return this.databaseService.user.findUnique({
-      where: { id: userId },
-      include: { items: true },
-    });
   }
 
   async findUserById(userId: string) {
@@ -70,24 +55,30 @@ export class UserService {
 
   async updateUser(userId: string, updateUserDto: UpdateUserDto, requestorId: string) {
     const { roles, ...userData } = updateUserDto;
-    // Check if the requestor has ADMIN privileges before allowing role updates
-    const requestorRoles = await this.rolesService.getRolesByUserId(requestorId);
-    const isAdmin = requestorRoles.some(role => role.name === UserRoles.ADMIN);
-
-    // Update user data excluding roles
+    // Update user data first
     const updatedUser = await this.databaseService.user.update({
       where: { id: userId },
       data: userData,
     });
+    // Only proceed with role updates if roles are provided
+    if (roles && roles.length > 0) {
+      const isAdmin = await this.rolesService.isUserAdmin(requestorId);
 
-    // If roles are provided and the requestor is ADMIN, update the user's roles
-    if (roles && roles.length > 0 && isAdmin) {
+      if (!isAdmin) {
+        throw new UnauthorizedException('Only ADMIN can update roles.');
+      }
+      // Clear existing roles
       await this.databaseService.userRoles.deleteMany({
-          where: { userId },
+        where: { userId },
       });
-      await this.rolesService.assignRolesToUser(userId, roles);
-    } else if (roles && roles.length > 0) {
-      throw new UnauthorizedException('Only ADMIN can update roles.');
+      // Assign new roles
+      for (const roleName of roles) {
+        if (!Object.values(UserRoles).includes(roleName as UserRoles)) {
+          throw new Error(`Invalid role: ${roleName}`);
+        } else {
+          await this.rolesService.assignRoleToUser(userId, roleName as UserRoles);
+        }
+      }
     }
     return updatedUser;
   }
@@ -104,7 +95,7 @@ export class UserService {
       data: { deletedAt: now },
     });
 
-     await this.databaseService.message.updateMany({
+    await this.databaseService.message.updateMany({
       where: { fromId: userId },
       data: { deletedAt: now },
     });

@@ -14,7 +14,7 @@ export class CreateGroupDto {
   isPublic: boolean;
 
   @IsString()
-  imageUrl: string;
+  imageUrl?: string;
 
   @IsNotEmpty()
   @IsUUID()
@@ -29,10 +29,6 @@ export class UpdateGroupDto {
   @IsString()
   @IsOptional()
   description?: string;
-
-  @IsBoolean()
-  @IsOptional()
-  isPublic?: boolean;
 
   @IsString()
   @IsOptional()

@@ -19,28 +19,28 @@ let AllExceptionsFilter = AllExceptionsFilter_1 = class AllExceptionsFilter exte
     }
     catch(exception, host) {
         const ctx = host.switchToHttp();
-        const responce = ctx.getResponse();
+        const response = ctx.getResponse();
         const request = ctx.getRequest();
-        const myResponceObj = {
+        const myResponseObj = {
             statusCode: 500,
             timeStamp: new Date().toISOString(),
             path: request.url,
-            responce: '',
+            response: '',
         };
         if (exception instanceof common_1.HttpException) {
-            myResponceObj.statusCode = exception.getStatus();
-            myResponceObj.responce = exception.getResponse();
+            myResponseObj.statusCode = exception.getStatus();
+            myResponseObj.response = exception.getResponse();
         }
         else if (exception instanceof library_1.PrismaClientValidationError) {
-            myResponceObj.statusCode = 422;
-            myResponceObj.responce = exception.message.replaceAll(/\n/g, '');
+            myResponseObj.statusCode = 422;
+            myResponseObj.response = exception.message.replaceAll(/\n/g, '');
         }
         else {
-            myResponceObj.statusCode = common_1.HttpStatus.INTERNAL_SERVER_ERROR;
-            myResponceObj.responce = 'Internal Server Error';
+            myResponseObj.statusCode = common_1.HttpStatus.INTERNAL_SERVER_ERROR;
+            myResponseObj.response = 'Internal Server Error';
         }
-        responce.status(myResponceObj.statusCode).json(myResponceObj);
-        this.logger.error(myResponceObj.responce, AllExceptionsFilter_1.name);
+        response.status(myResponseObj.statusCode).json(myResponseObj);
+        this.logger.error(myResponseObj.response, AllExceptionsFilter_1.name);
         super.catch(exception, host);
     }
 };
