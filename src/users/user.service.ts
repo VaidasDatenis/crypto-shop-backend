@@ -15,7 +15,6 @@ export class UserService {
 
   async createUser(createUserDto: CreateUserDto, requestorId?: string) {
     const { roles = [], ...userData } = createUserDto;
-    // Create the user without roles first
     const newUser = await this.databaseService.user.create({
         data: userData,
     });
@@ -35,9 +34,9 @@ export class UserService {
       }
     }
     // Assign the determined roles to the new user
-    for (const roleName of rolesToAssign) {
-      await this.rolesService.assignRoleToUser(newUser.id, roleName);
-    }
+    await Promise.all(rolesToAssign.map(roleName => 
+      this.rolesService.assignRoleToUser(newUser.id, roleName)
+    ));
     return newUser;
   }
 

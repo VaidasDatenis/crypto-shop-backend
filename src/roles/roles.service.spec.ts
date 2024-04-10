@@ -60,13 +60,15 @@ describe('RolesService', () => {
       ];
       mockRolesFindMany.mockResolvedValue(mockRoles);
       const roles = await service.getRolesByUserId(userId);
-      expect(roles).toEqual(mockRoles.map(({ role }) => role));
+      const expectedRoles = mockRoles.map(mockRole => mockRole.role.name);
+      expect(roles).toEqual(expectedRoles);
       expect(databaseService.userRoles.findMany).toHaveBeenCalledWith({
         where: { userId },
         include: { role: true },
       });
     });
   });
+
 
   describe('createRole', () => {
     it('should create a role when user is admin', async () => {
