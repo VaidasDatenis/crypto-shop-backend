@@ -35,6 +35,13 @@ export class GroupsController {
     return this.groupsService.findAllPrivateGroups();
   }
 
+  @Get(':groupId/items')
+  @Roles(UserRoles.ADMIN, UserRoles.GROUP_OWNER, UserRoles.GROUP_MEMBER)
+  @UseGuards(AuthGuard)
+  async findAllItemsInGroup(@Param('groupId') groupId: string) {
+    return this.groupsService.getItemsByGroupId(groupId);
+  }
+
   @Delete(':groupId/items/:itemId/remove')
   @Roles(UserRoles.ADMIN, UserRoles.GROUP_OWNER)
   @UseGuards(AuthGuard, RolesGuard)
@@ -48,7 +55,7 @@ export class GroupsController {
   }
 
   @Post(':userId/group')
-  @Roles(UserRoles.GROUP_OWNER)
+  @Roles(UserRoles.ADMIN, UserRoles.USER)
   @UseGuards(AuthGuard, RolesGuard)
   createGroupByUser(@Param('userId') userId: string, @Body() groupDto: CreateGroupDto) {
     return this.groupsService.createGroupByUser(groupDto, userId);
@@ -70,7 +77,7 @@ export class GroupsController {
     return { status: 201, message: 'Successfully left the group.' };
   }
 
-  @Post(':groupId/items')
+  @Post(':groupId/item')
   @Roles(UserRoles.ADMIN, UserRoles.GROUP_OWNER, UserRoles.GROUP_MEMBER)
   @UseGuards(AuthGuard)
   async addItem(@GetUser('id') userId: string, @Param('groupId') groupId: string, @Body() createItemDto: CreateItemDto) {
@@ -80,8 +87,9 @@ export class GroupsController {
   @Post(':groupId/remove-member/:memberId')
   @Roles(UserRoles.ADMIN, UserRoles.GROUP_OWNER)
   @UseGuards(AuthGuard, RolesGuard)
-  removeMemberFromGroup(@Param('groupId') groupId: string, @Param('memberId') memberId: string) {
-    return this.groupsService.removeUserFromGroup(memberId, groupId);
+  async removeMemberFromGroup(@Param('groupId') groupId: string, @Param('memberId') memberId: string) {
+    await this.groupsService.removeUserFromGroup(memberId, groupId);
+    return { status: 201, message: 'Successfully removed a member.' };
   }
 
   @Patch(':groupId')
@@ -98,7 +106,8 @@ export class GroupsController {
   @Delete(':groupId')
   @Roles(UserRoles.ADMIN, UserRoles.GROUP_OWNER)
   @UseGuards(AuthGuard, RolesGuard)
-  deleteGroup(@Param('groupId') groupId: string, @GetUser('id') userId: string) {
-    return this.groupsService.deleteGroupByOwner(groupId, userId);
+  async deleteGroup(@Param('groupId') groupId: string, @GetUser('id') userId: string) {
+    await this.groupsService.deleteGroupByOwner(groupId, userId);
+    return { status: 201, message: 'Group deleted successfully.' };
   }
 }

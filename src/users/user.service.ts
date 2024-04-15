@@ -14,7 +14,7 @@ export class UserService {
   ) {}
 
   async createUser(createUserDto: CreateUserDto, requestorId?: string) {
-    const { roles = [], ...userData } = createUserDto;
+    const { userRoles = [], ...userData } = createUserDto;
     const newUser = await this.databaseService.user.create({
         data: userData,
     });
@@ -22,20 +22,20 @@ export class UserService {
     let rolesToAssign: UserRoles[] = [UserRoles.USER];
     if (requestorId) {
       const isAdmin = await this.rolesService.isUserAdmin(requestorId);
-      if (isAdmin && roles.includes(UserRoles.ADMIN)) {
-        rolesToAssign = roles.map(role => {
+      if (isAdmin && userRoles.includes(UserRoles.ADMIN)) {
+        rolesToAssign = userRoles.map(role => {
           if (Object.values(UserRoles).includes(role as UserRoles)) {
             return role as UserRoles;
           }
           throw new Error(`Invalid role: ${role}`);
         });
-      } else if (!isAdmin && roles && roles.includes(UserRoles.ADMIN)) {
+      } else if (!isAdmin && userRoles && userRoles.includes(UserRoles.ADMIN)) {
         throw new ForbiddenException('Only ADMIN can assign ADMIN role.');
       }
     }
     // Assign the determined roles to the new user
     await Promise.all(rolesToAssign.map(roleName => 
-      this.rolesService.assignRoleToUser(newUser.id, roleName)
+      this.rolesService.assignUserRoleToUser(newUser.id, roleName)
     ));
     return newUser;
   }
@@ -53,14 +53,14 @@ export class UserService {
   }
 
   async updateUser(userId: string, updateUserDto: UpdateUserDto, requestorId: string) {
-    const { roles, ...userData } = updateUserDto;
+    const { userRoles, ...userData } = updateUserDto;
     // Update user data first
     const updatedUser = await this.databaseService.user.update({
       where: { id: userId },
       data: userData,
     });
     // Only proceed with role updates if roles are provided
-    if (roles && roles.length > 0) {
+    if (userRoles && userRoles.length > 0) {
       const isAdmin = await this.rolesService.isUserAdmin(requestorId);
 
       if (!isAdmin) {
@@ -71,11 +71,11 @@ export class UserService {
         where: { userId },
       });
       // Assign new roles
-      for (const roleName of roles) {
+      for (const roleName of userRoles) {
         if (!Object.values(UserRoles).includes(roleName as UserRoles)) {
           throw new Error(`Invalid role: ${roleName}`);
         } else {
-          await this.rolesService.assignRoleToUser(userId, roleName as UserRoles);
+          await this.rolesService.assignUserRoleToUser(userId, roleName as UserRoles);
         }
       }
     }

@@ -84,7 +84,6 @@ describe('ItemController', () => {
     const result = {
       id: userId,
       walletAddress: walletAddr,
-      walletNames: ['metamask'],
       email: null,
       createdAt: new Date(),
       updatedAt: new Date(),

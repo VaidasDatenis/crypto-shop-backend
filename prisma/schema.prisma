@@ -19,7 +19,6 @@ datasource db {
 model User {
   id            String              @id @default(uuid())
   walletAddress String              @unique
-  walletNames   Json?
   email         String?             @unique
   ownedGroups   Group[]             @relation("GroupOwner")
   memberships   Group[]             @relation("GroupMembers")
@@ -28,7 +27,8 @@ model User {
   sellerTransactions Transaction[]  @relation("SellerTransactions")
   messagesSent     Message[]        @relation("messagesSent")
   messagesReceived Message[]        @relation("messagesReceived")
-  roles         UserRoles[]
+  userRoles     UserRoles[]
+  groupRoles    GroupRoles[]
   createdAt     DateTime            @default(now())
   updatedAt     DateTime            @updatedAt
   deletedAt     DateTime?
@@ -61,7 +61,7 @@ model Group {
   owner       User     @relation(fields: [ownerId], references: [id], name: "GroupOwner")
   items       Item[]   @relation("GroupItems")
   members     User[]   @relation("GroupMembers")
-  userRoles   UserRoles[]
+  groupRoles  GroupRoles[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   deletedAt   DateTime?
@@ -97,6 +97,7 @@ model Role {
   name        String    @unique
   description String?
   users       UserRoles[]
+  groups      GroupRoles[]
 }
 
 // Pivot table for many-to-many relationship between User and Role
@@ -104,10 +105,21 @@ model UserRoles {
   id        String   @id @default(uuid())
   userId    String
   roleId    String
-  groupId   String?
   user      User     @relation(fields: [userId], references: [id])
   role      Role     @relation(fields: [roleId], references: [id])
-  group     Group?   @relation(fields: [groupId], references: [id])
+
+  @@unique([userId, roleId])
+}
+
+// Pivot table for many-to-many relationship between Group and Role
+model GroupRoles {
+  id        String   @id @default(uuid())
+  userId    String
+  roleId    String
+  groupId   String
+  user      User     @relation(fields: [userId], references: [id])
+  role      Role     @relation(fields: [roleId], references: [id])
+  group     Group   @relation(fields: [groupId], references: [id])
 
   @@unique([userId, roleId, groupId])
 }

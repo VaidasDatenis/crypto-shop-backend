@@ -9,10 +9,6 @@ export class CreateUserDto {
   @IsString()
   walletAddress: string;
 
-  @ApiProperty({ example: '{"mainWallet": "0x123456789abcdef", "secondaryWallet": "0xfedcba987654321"}', required: false })
-  @IsJSON() // Ensure this matches how you handle JSON parsing; you might need custom validation
-  walletNames?: Prisma.JsonValue;
-
   @ApiProperty({ example: 'user@example.com', required: false })
   @IsEmail()
   @IsOptional()
@@ -21,7 +17,12 @@ export class CreateUserDto {
   @ApiProperty({ example: ['USER'], required: true })
   @IsArray()
   @IsString({ each: true })
-  roles?: string[];
+  userRoles?: string[];
+
+  // @ApiProperty({ example: ['GROUP'], required: false })
+  // @IsArray()
+  // @IsString({ each: true })
+  // groupRoles?: string[];
 }
 
 export class UpdateUserDto extends PartialType(CreateUserDto) {}

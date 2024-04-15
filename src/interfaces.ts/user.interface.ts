@@ -7,7 +7,6 @@ import { Group } from "./group.interface";
 export interface User {
   id: number;
   walletAddress: string;
-  walletNames: JSON;
   email?: string;
   items: Item[];
   buyerTransactions: Transaction[];
@@ -16,7 +15,8 @@ export interface User {
   messagesReceived: Message[];
   ownedGroups?: Group[];
   memberships?: Group[];
-  roles: UserRoles[];
+  userRoles: UserRoles[];
+  groupRoles?: UserRoles[];
   createdAt: Date;
   updatedAt: Date;
   deletedAt?: Date;

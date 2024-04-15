@@ -132,7 +132,6 @@ describe('ItemService', () => {
     const result = {
       id: userId,
       walletAddress: walletAddr,
-      walletNames: ['metamask'],
       email: null,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -162,7 +161,6 @@ describe('ItemService', () => {
       const mockResponse = {
         id: userId,
         walletAddress: '0x000',
-        walletNames: ['metamask'],
         email: null,
         createdAt: new Date(),
         updatedAt: new Date(),

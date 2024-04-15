@@ -15,6 +15,8 @@ describe('RolesService', () => {
   const mockRoleUpdate = jest.fn();
   const mockGroupCount = jest.fn();
   const mockUserRolesDeleteMany = jest.fn();
+  const mockGroupRolesDeleteMany = jest.fn();
+  const mockGroupRolesFindMany = jest.fn();
 
   beforeEach(() => {
     mockRolesFindMany.mockReset().mockResolvedValue([]);
@@ -39,6 +41,10 @@ describe('RolesService', () => {
               upsert: jest.fn(),
               deleteMany: mockUserRolesDeleteMany,
             },
+            groupRoles: {
+              findMany: mockGroupRolesFindMany,
+              deleteMany: mockGroupRolesDeleteMany,
+            },
             group: {
               count: mockGroupCount,
             },
@@ -54,21 +60,34 @@ describe('RolesService', () => {
   describe('getRolesByUserId', () => {
     it('should return roles of a user', async () => {
       const userId = 'test-user-id';
-      const mockRoles = [
+      const mockUserRoles = [
         { role: { name: UserRoles.USER } },
         { role: { name: UserRoles.GROUP_OWNER } },
       ];
-      mockRolesFindMany.mockResolvedValue(mockRoles);
+      const mockGroupRoles = [
+        { role: { name: UserRoles.ADMIN } },
+        { role: { name: UserRoles.GROUP_MEMBER } },
+      ];
+      const expectedRoles = [
+        UserRoles.USER,
+        UserRoles.GROUP_OWNER,
+        UserRoles.ADMIN,
+        UserRoles.GROUP_MEMBER,
+      ];
+      mockRolesFindMany.mockResolvedValue(mockUserRoles);
+      mockGroupRolesFindMany.mockResolvedValue(mockGroupRoles);
       const roles = await service.getRolesByUserId(userId);
-      const expectedRoles = mockRoles.map(mockRole => mockRole.role.name);
       expect(roles).toEqual(expectedRoles);
       expect(databaseService.userRoles.findMany).toHaveBeenCalledWith({
         where: { userId },
         include: { role: true },
       });
+      expect(databaseService.groupRoles.findMany).toHaveBeenCalledWith({
+        where: { userId },
+        include: { role: true },
+      });
     });
   });
-
 
   describe('createRole', () => {
     it('should create a role when user is admin', async () => {
@@ -159,27 +178,28 @@ describe('RolesService', () => {
     });
   });
 
-  // UpdateRolesAfterGroupDeletion
-  describe('updateRolesAfterGroupDeletion', () => {
+  // updateGroupRolesAfterGroupDeletion
+  describe('updateGroupRolesAfterGroupDeletion', () => {
     it('should remove GROUP_OWNER role after group deletion if no owned groups remain', async () => {
       const userId = 'user-id';
+      const groupId = 'group-id';
       mockGroupCount.mockResolvedValue(0);
       jest.spyOn(service, 'findRoleByName').mockResolvedValue({ id: '2', name: UserRoles.GROUP_OWNER, description: 'Group owner description' });
-      mockUserRolesDeleteMany.mockResolvedValue({ count: 1 });
-      await service.updateRolesAfterGroupDeletion(userId);      
-      expect(databaseService.userRoles.deleteMany).toHaveBeenCalledWith({
-        where: { userId, roleId: '1', groupId: undefined },
+      mockGroupRolesDeleteMany.mockResolvedValue({ count: 1 });
+      await service.updateGroupRolesAfterGroupDeletion(userId, groupId);      
+      expect(databaseService.groupRoles.deleteMany).toHaveBeenCalledWith({
+        where: { userId, roleId: '1', groupId },
       });
     });
   });
 
-  // RemoveRoleFromUser
-  describe('removeRoleFromUser', () => {
+  // Remove UserRole from user
+  describe('removeUserRoleFromUser', () => {
     it('should remove a role from a user', async () => {
       const userId = 'user-id';
       const roleName = UserRoles.USER;
       mockRoleFindUnique.mockResolvedValue({ id: '1', name: roleName });
-      await service.removeRoleFromUser(userId, roleName);
+      await service.removeUserRoleFromUser(userId, roleName);
       expect(databaseService.userRoles.deleteMany).toHaveBeenCalledWith({
         where: { userId, roleId: '1' },
       });
