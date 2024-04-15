@@ -63,13 +63,12 @@ describe('UserService', () => {
       }));
       const createUserDto: CreateUserDto = {
         walletAddress: '0x001',
-        walletNames: ['0x0002'],
         email: 'user-email@example.com',
       };
-      rolesService.assignRoleToUser.mockResolvedValueOnce(undefined);
+      rolesService.assignUserRoleToUser.mockResolvedValueOnce(undefined);
       const result = await service.createUser(createUserDto, undefined);
       expect(result).toMatchObject(createUserDto);
-      expect(rolesService.assignRoleToUser).toHaveBeenCalledWith(expect.any(String), UserRoles.USER);
+      expect(rolesService.assignUserRoleToUser).toHaveBeenCalledWith(expect.any(String), UserRoles.USER);
     });
   });
 
@@ -91,7 +90,7 @@ describe('UserService', () => {
     it('should throw UnauthorizedException if non-admin tries to update roles', async () => {
       const userId = 'mockUserId';
       const requestorId = 'nonAdminUserId';
-      const updateUserDto: UpdateUserDto = { roles: ['ADMIN'] };
+      const updateUserDto: UpdateUserDto = { userRoles: ['ADMIN'] };
       rolesService.isUserAdmin.mockResolvedValue(false);
       await expect(service.updateUser(userId, updateUserDto, requestorId)).rejects.toThrow(UnauthorizedException);
     });

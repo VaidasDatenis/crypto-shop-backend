@@ -4,6 +4,7 @@ import { DatabaseService } from 'src/database/database.service';
 import { RolesService } from 'src/roles/roles.service';
 import { UserRoles } from 'src/enums/roles.enum';
 import { CreateItemDto } from 'src/items/dto/item.dto';
+import { Item } from '@prisma/client';
 
 @Injectable()
 export class GroupsService {
@@ -32,6 +33,22 @@ export class GroupsService {
     })
   }
 
+  async getItemsByGroupId(groupId: string): Promise<Item[]> {
+    const group = await this.databaseService.group.findUnique({
+      where: { id: groupId, deletedAt: null },
+      include: { items: true }
+    });
+
+    if (!group) {
+      throw new NotFoundException(`Group with ID "${groupId}" not found.`);
+    }
+
+    if (!group.items.length) {
+      return [];
+    }
+    return group.items;
+  }
+
   async createGroupByUser(createGroupDto: CreateGroupDto, userId: string) {
     const isCreatingPublicGroup = createGroupDto.isPublic;
     const ownedGroupsCount = await this.databaseService.group.count({
@@ -51,7 +68,7 @@ export class GroupsService {
         ownerId: userId,
       }
     });
-    await this.rolesService.assignRoleToUser(userId, UserRoles.GROUP_OWNER);
+    await this.rolesService.assignGroupRoleToUser(userId, UserRoles.GROUP_OWNER, newGroup.id);
     return newGroup;
   }
 
@@ -66,7 +83,7 @@ export class GroupsService {
     });
 
     // Assign GROUP_MEMBER role
-    await this.rolesService.assignRoleToUser(userId, UserRoles.GROUP_MEMBER, groupId);
+    await this.rolesService.assignGroupRoleToUser(userId, UserRoles.GROUP_MEMBER, groupId);
   }
 
   async updateGroup(groupId: string, userId: string, updateGroupDto: UpdateGroupDto) {
@@ -106,14 +123,14 @@ export class GroupsService {
       data: { members: { disconnect: { id: userId } } },
     });
 
-    // Remove GROUP_MEMBER role for this specific group if user is not a member of any other group
+    // Remove GROUP_MEMBER role for this specific group
     const memberships = await this.databaseService.group.findMany({
       where: { members: { some: { id: userId } }, deletedAt: null, NOT: { id: groupId } },
     });
 
-    // If the user is not a member of any other group, remove the GROUP_MEMBER role
+    // remove the GROUP_MEMBER role
     if (memberships.length === 0) {
-      await this.rolesService.removeRoleFromUser(userId, UserRoles.GROUP_MEMBER, groupId);
+      await this.rolesService.removeGroupRoleFromUser(userId, UserRoles.GROUP_MEMBER, groupId);
     }
   }
 
@@ -145,7 +162,7 @@ export class GroupsService {
 
   async removeItemFromGroup(itemId: string, groupId: string, userId: string): Promise<void> {
     const group = await this.databaseService.group.findUnique({
-      where: { id: groupId },
+      where: { id: groupId, deletedAt: null },
     });
     if (!group) throw new NotFoundException(`Group with ID ${groupId} not found.`);
     
@@ -189,7 +206,7 @@ export class GroupsService {
 
     // If the user is not a member of any other group, remove the GROUP_MEMBER role
     if (memberships.length === 0) {
-      await this.rolesService.removeRoleFromUser(userId, UserRoles.GROUP_MEMBER, groupId);
+      await this.rolesService.removeGroupRoleFromUser(userId, UserRoles.GROUP_MEMBER, groupId);
     }
   }
 
@@ -247,6 +264,6 @@ export class GroupsService {
       data: { groupId: null },
     });
 
-    await this.rolesService.updateRolesAfterGroupDeletion(userId);
+    await this.rolesService.updateGroupRolesAfterGroupDeletion(userId, groupId);
   };
 }

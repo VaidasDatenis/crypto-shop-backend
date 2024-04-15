@@ -12,7 +12,12 @@ export class RolesService {
       where: { userId, },
       include: { role: true },
     });
-    return userRoles.map(userRole => userRole.role.name);
+    const groupRoles = await this.databaseService.groupRoles.findMany({
+      where: { userId },
+      include: { role: true },
+    });
+    const roles = [...userRoles, ...groupRoles];
+    return roles.map(({ role }) => role.name);
   }
 
   async findRoleByName(roleName: string) {
@@ -35,11 +40,23 @@ export class RolesService {
   }
 
   // Pivot table UserRoles
-  async assignRoleToUser(userId: string, roleName: UserRoles, groupId?: string) {
+  async assignUserRoleToUser(userId: string, roleName: UserRoles) {
     const role = await this.databaseService.role.findUnique({ where: { name: roleName } });
     if (!role) throw new Error('Role not found.');
 
     await this.databaseService.userRoles.upsert({
+      where: { userId_roleId: { userId, roleId: role.id } },
+      update: {},
+      create: { userId, roleId: role.id },
+    });
+  }
+
+  // Pivot table GroupRoles
+  async assignGroupRoleToUser(userId: string, roleName: UserRoles, groupId: string) {
+    const role = await this.databaseService.role.findUnique({ where: { name: roleName } });
+    if (!role) throw new Error('Role not found.');
+
+    await this.databaseService.groupRoles.upsert({
       where: { userId_roleId_groupId: { userId, roleId: role.id, groupId } },
       update: {},
       create: { userId, roleId: role.id, groupId },
@@ -76,7 +93,7 @@ export class RolesService {
     });
   }
 
-  async updateRolesAfterGroupDeletion(userId: string) {
+  async updateGroupRolesAfterGroupDeletion(userId: string, groupId: string) {
     // Check if the user still owns any groups
     const ownedGroups = await this.databaseService.group.count({
       where: { ownerId: userId },
@@ -85,15 +102,24 @@ export class RolesService {
     // If the user no longer owns any groups, remove the GROUP_OWNER role
     if (ownedGroups === 0) {
       const groupOwnerRole = await this.findRoleByName(UserRoles.GROUP_OWNER);
-      await this.removeRoleFromUser(userId, groupOwnerRole.name);
+      await this.removeGroupRoleFromUser(userId, groupOwnerRole.name, groupId);
     }
   }
 
-  async removeRoleFromUser(userId: string, roleName: string, groupId?: string) {
+  async removeUserRoleFromUser(userId: string, roleName: string) {
     const role = await this.databaseService.role.findUnique({ where: { name: roleName } });
     if (!role) throw new Error('Role not found.');
 
     await this.databaseService.userRoles.deleteMany({
+      where: { userId, roleId: role.id },
+    });
+  }
+
+  async removeGroupRoleFromUser(userId: string, roleName: string, groupId: string) {
+    const role = await this.databaseService.role.findUnique({ where: { name: roleName } });
+    if (!role) throw new Error('Role not found.');
+
+    await this.databaseService.groupRoles.deleteMany({
       where: { userId, roleId: role.id, groupId },
     });
   }

@@ -19,7 +19,7 @@ describe('GroupsService', () => {
   const mockGroupCreate = jest.fn();
   const mockGroupUpdate = jest.fn();
   const mockGroupDelete = jest.fn();
-  const mockAssignRoleToUser = jest.fn();
+  const mockAssignUserRoleToUser = jest.fn();
   const mockItemCreate = jest.fn();
   const mockItemUpdate = jest.fn();
 
@@ -30,7 +30,7 @@ describe('GroupsService', () => {
     mockGroupCreate.mockReset().mockResolvedValue(null);
     mockGroupUpdate.mockReset().mockResolvedValue(null);
     mockGroupDelete.mockReset().mockResolvedValue(null);
-    mockAssignRoleToUser.mockReset().mockResolvedValue(null);
+    mockAssignUserRoleToUser.mockReset().mockResolvedValue(null);
     mockItemCreate.mockReset().mockResolvedValue(null);
     mockItemUpdate.mockReset().mockResolvedValue(null);
   });
@@ -60,8 +60,10 @@ describe('GroupsService', () => {
         {
           provide: RolesService,
           useValue: {
-            assignRoleToUser: jest.fn(),
-            removeRoleFromUser: jest.fn(),
+            assignUserRoleToUser: jest.fn(),
+            assignGroupRoleToUser: jest.fn(),
+            removeUserRoleFromUser: jest.fn(),
+            removeGroupRoleFromUser: jest.fn(),
             isUserAdmin: jest.fn(),
           },
         },
@@ -183,7 +185,7 @@ describe('GroupsService', () => {
 
     await service.removeItemFromGroup(itemId, groupId, userId);
 
-    expect(databaseService.group.findUnique).toHaveBeenCalledWith({ where: { id: groupId } });
+    expect(databaseService.group.findUnique).toHaveBeenCalledWith({ where: { id: groupId, deletedAt: null } });
     expect(databaseService.item.update).toHaveBeenCalledWith({
       where: { id: itemId },
       data: { groupId: null },
@@ -230,6 +232,7 @@ describe('GroupsService', () => {
 
   it('should create a group by user', async () => {
     const userId = 'test-user-id';
+    const groupId = 'group-id';
     const createGroupDto: CreateGroupDto = {
       name: 'Pet Toys Store',
       description: 'All the toys for our pets!',
@@ -237,17 +240,33 @@ describe('GroupsService', () => {
       imageUrl: null,
       ownerId: userId,
     };
-    mockGroupCount.mockResolvedValue(0);
-    mockGroupCreate.mockResolvedValue(createGroupDto);
+    const ownedGroupsCount = 0;
+    const newGroup = {
+      ...createGroupDto,
+      id: groupId,
+    };
 
-    await expect(service.createGroupByUser(createGroupDto, userId)).resolves.toEqual(createGroupDto);
+    mockGroupCount.mockResolvedValue(ownedGroupsCount);
+    mockGroupCreate.mockResolvedValue(newGroup);
+    rolesService.assignGroupRoleToUser.mockResolvedValue(null);
+
+    const result = await service.createGroupByUser(createGroupDto, userId);
+
+    expect(databaseService.group.count).toHaveBeenCalledWith({
+      where: {
+        ownerId: userId,
+        isPublic: createGroupDto.isPublic,
+        deletedAt: null,
+      },
+    });
     expect(databaseService.group.create).toHaveBeenCalledWith({
       data: {
         ...createGroupDto,
         ownerId: userId,
       },
     });
-    expect(rolesService.assignRoleToUser).toHaveBeenCalledWith(userId, UserRoles.GROUP_OWNER);
+    expect(rolesService.assignGroupRoleToUser).toHaveBeenCalledWith(userId, UserRoles.GROUP_OWNER, groupId);
+    expect(result).toEqual(newGroup);
   });
 
   it('should not create more than one public/private group per user', async () => {
@@ -272,13 +291,13 @@ describe('GroupsService', () => {
       isPublic: true,
       deletedAt: null
     });
-    rolesService.assignRoleToUser.mockResolvedValueOnce(undefined);
+    rolesService.assignUserRoleToUser.mockResolvedValueOnce(undefined);
     await service.addUserToPublicGroup(userId, groupId);
     expect(mockGroupUpdate).toHaveBeenCalledWith({
       where: { id: groupId, isPublic: true, deletedAt: null },
       data: { members: { connect: { id: userId } } },
     });
-    expect(rolesService.assignRoleToUser).toHaveBeenCalledWith(userId, UserRoles.GROUP_MEMBER, groupId);
+    expect(rolesService.assignGroupRoleToUser).toHaveBeenCalledWith(userId, UserRoles.GROUP_MEMBER, groupId);
   });
 
   it('should update a group', async () => {
@@ -296,28 +315,53 @@ describe('GroupsService', () => {
     });
   });
 
-  it('should remove a member from a group', async () => {
+  it('should remove user from group members list and remove GROUP_MEMBER role if no other memberships exist', async () => {
     const groupId = 'test-group-id';
-    const userId = 'test-member-id';
-    mockGroupFindUnique.mockResolvedValueOnce({
+    const userId = 'test-user-id';
+    const groupMock = {
       id: groupId,
-      isPublic: true,
       members: [{ id: userId }],
-    });
-
-    // Assuming the user is not a member of any other groups
-    // This part is crucial as it determines whether the GROUP_MEMBER role should be removed
-    mockGroupFindMany.mockResolvedValueOnce([]);
-
+    };
+    const membershipsMock = [];
+  
+    mockGroupFindUnique.mockResolvedValue(groupMock);
+    mockGroupUpdate.mockResolvedValue(null);
+    mockGroupFindMany.mockResolvedValue(membershipsMock);
+    rolesService.removeGroupRoleFromUser.mockResolvedValue(null);
+  
     await service.leaveGroupAsMember(groupId, userId);
-
-    // Check if the user is removed from the group's members
-    expect(mockGroupUpdate).toHaveBeenCalledWith({
+  
+    expect(databaseService.group.findUnique).toHaveBeenCalledWith({
+      where: { id: groupId, deletedAt: null },
+      include: { members: true },
+    });
+    expect(databaseService.group.update).toHaveBeenCalledWith({
       where: { id: groupId, deletedAt: null },
       data: { members: { disconnect: { id: userId } } },
     });
-
-    // Since the user is not part of any other group, check if the GROUP_MEMBER role is removed
-    expect(rolesService.removeRoleFromUser).toHaveBeenCalledWith(userId, UserRoles.GROUP_MEMBER, groupId);
+    expect(databaseService.group.findMany).toHaveBeenCalledWith({
+      where: { members: { some: { id: userId } }, deletedAt: null, NOT: { id: groupId } },
+    });
+    expect(rolesService.removeGroupRoleFromUser).toHaveBeenCalledWith(userId, UserRoles.GROUP_MEMBER, groupId);
+  });
+  
+  it('should throw NotFoundException if group is not found', async () => {
+    const groupId = 'test-group-id';
+    const userId = 'test-user-id';
+  
+    mockGroupFindUnique.mockResolvedValue(null);
+    await expect(service.leaveGroupAsMember(groupId, userId)).rejects.toThrow(NotFoundException);
+  });
+  
+  it('should throw BadRequestException if user is not a member of the group', async () => {
+    const groupId = 'test-group-id';
+    const userId = 'test-user-id';
+    const groupMock = {
+      id: groupId,
+      members: [],
+    };
+  
+    mockGroupFindUnique.mockResolvedValue(groupMock);
+    await expect(service.leaveGroupAsMember(groupId, userId)).rejects.toThrow(BadRequestException);
   });
 });
