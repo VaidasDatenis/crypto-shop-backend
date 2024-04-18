@@ -1,12 +1,12 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { IsArray, IsEmail, IsEnum, IsJSON, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import { Prisma } from '@prisma/client';
+import { IsArray, IsEmail, IsEnum, IsEthereumAddress, IsJSON, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { UserRoles } from 'src/enums/roles.enum';
 
 export class CreateUserDto {
   @ApiProperty({ example: '0x123456789abcdef' })
   @IsNotEmpty()
   @IsString()
+  @IsEthereumAddress()
   walletAddress: string;
 
   @ApiProperty({ example: 'user@example.com', required: false })
@@ -17,12 +17,17 @@ export class CreateUserDto {
   @ApiProperty({ example: ['USER'], required: true })
   @IsArray()
   @IsString({ each: true })
-  userRoles?: string[];
-
-  // @ApiProperty({ example: ['GROUP'], required: false })
-  // @IsArray()
-  // @IsString({ each: true })
-  // groupRoles?: string[];
+  userRoles?: UserRoles[];
 }
 
-export class UpdateUserDto extends PartialType(CreateUserDto) {}
+export class UpdateUserDto {
+  @IsEmail()
+  @IsOptional()
+  email?: string;
+
+  @IsString()
+  @IsOptional()
+  @IsEthereumAddress()
+  walletAddress?: string;
+  userRoles?: UserRoles[];
+}

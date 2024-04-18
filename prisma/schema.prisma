@@ -18,7 +18,7 @@ datasource db {
 
 model User {
   id            String              @id @default(uuid())
-  walletAddress String              @unique
+  userWallets   UserWallet[]
   email         String?             @unique
   ownedGroups   Group[]             @relation("GroupOwner")
   memberships   Group[]             @relation("GroupMembers")
@@ -31,6 +31,17 @@ model User {
   groupRoles    GroupRoles[]
   createdAt     DateTime            @default(now())
   updatedAt     DateTime            @updatedAt
+  deletedAt     DateTime?
+}
+
+model UserWallet {
+  id            String    @id @default(uuid())
+  walletAddress String    @unique
+  nonce         String?
+  user          User      @relation(fields: [userId], references: [id])
+  userId        String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
   deletedAt     DateTime?
 }
 

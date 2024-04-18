@@ -1,11 +1,15 @@
 import { NestFactory, HttpAdapterHost } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { MyLoggerService } from './my-logger/my-logger.service';
+// import { MyLoggerService } from './my-logger/my-logger.service';
 import { AllExceptionsFilter } from './all-exceptions.filter';
 import helmet from 'helmet';
+import { ValidationPipe } from '@nestjs/common';
+import { setupHelmet } from './helmet.config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  setupHelmet(app);
+  app.useGlobalPipes(new ValidationPipe());
   // const app = await NestFactory.create(AppModule, {
   //   bufferLogs: true,
   // });

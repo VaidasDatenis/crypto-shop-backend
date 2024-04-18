@@ -19,6 +19,7 @@ describe('RolesController', () => {
             createRole: jest.fn(),
             updateRole: jest.fn(),
             deleteRole: jest.fn(),
+            getRolesByUserId: jest.fn(),
           },
         },
         {
@@ -58,6 +59,12 @@ describe('RolesController', () => {
     };
     jest.spyOn(service, 'updateRole').mockResolvedValue(updatedRole);
     expect(await controller.updateRole(roleId, updateRoleDto, 'admin-user-id')).toBe(updatedRole);
+  });
+
+  it('should call getRolesByUserId with correct userId', async () => {
+    const userId = 'test-user-id';
+    await controller.getRolesByUserId(userId);
+    expect(service.getRolesByUserId).toHaveBeenCalledWith(userId);
   });
 
   it('should delete a role', async () => {

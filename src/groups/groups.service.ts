@@ -35,7 +35,7 @@ export class GroupsService {
 
   async getItemsByGroupId(groupId: string): Promise<Item[]> {
     const group = await this.databaseService.group.findUnique({
-      where: { id: groupId, deletedAt: null },
+      where: { id: groupId },
       include: { items: true }
     });
 

@@ -21,7 +21,7 @@ export class TransactionController {
     return this.transactionService.findAll();
   }
 
-  @Throttle({ short: { ttl: 1000, limit: 1 }})
+  @Throttle({ short: { ttl: 1, limit: 1 }})
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.transactionService.findOne(id);

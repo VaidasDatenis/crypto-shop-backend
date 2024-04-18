@@ -17,6 +17,8 @@ describe('AuthController', () => {
             connect: jest.fn().mockImplementation((signInDto) => Promise.resolve({
               access_token: 'test-access-token',
               userId: 'test-user-id',
+              walletAddress: signInDto.walletAddress,
+              signature: signInDto.signature,
             })),
           },
         },
@@ -28,7 +30,7 @@ describe('AuthController', () => {
   });
 
   it('should call AuthService connect with the correct DTO', async () => {
-    const signInDto: AuthDto = { walletAddress: 'test-wallet-address' };
+    const signInDto: AuthDto = { walletAddress: 'test-wallet-address', signature: 'test-signature' };
     await controller.signIn(signInDto);
     expect(authService.connect).toHaveBeenCalledWith(signInDto);
   });

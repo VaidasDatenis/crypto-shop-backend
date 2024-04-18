@@ -26,10 +26,11 @@ export class ItemController {
   }
 
   @Public()
-  @Throttle({ short: { ttl: 1000, limit: 1 }})
+  @Throttle({ short: { ttl: 1, limit: 1 }})
   @Get(':id')
   @Roles(UserRoles.ADMIN, UserRoles.USER)
   @UseGuards(AuthGuard, RolesGuard)
+  @ExcludeSoftDeleted(true)
   findOne(@Param('id') id: string) {
     return this.itemService.findOne(id);
   }
@@ -38,6 +39,7 @@ export class ItemController {
   @ExcludeSoftDeleted(true)
   @Roles(UserRoles.ADMIN, UserRoles.USER)
   @UseGuards(AuthGuard, RolesGuard)
+  @ExcludeSoftDeleted(true)
   findAllUserItems(@Param('userId') userId: string) {
     return this.itemService.findAllUserItems(userId);
   }
