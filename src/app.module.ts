@@ -5,7 +5,7 @@ import { DatabaseModule } from './database/database.module';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { MyLoggerModule } from './my-logger/my-logger.module';
-import { UserModule } from './users/user.module';
+import { UserModule } from './users/users.module';
 import { ItemModule } from './items/item.module';
 import { TransactionModule } from './transactions/transaction.module';
 import { MessageModule } from './messages/message.module';
@@ -21,13 +21,13 @@ import { UserRolesModule } from './user-roles/user-roles.module';
     ThrottlerModule.forRoot([
       {
         name: 'short',
-        ttl: 1000,
-        limit: 3,
+        ttl: 1,
+        limit: 1,
       },
       {
         name: 'long',
-        ttl: 60000,
-        limit: 100,
+        ttl: 60,
+        limit: 10,
       },
     ]),
     ConfigModule.forRoot(),

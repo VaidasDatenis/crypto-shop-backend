@@ -38,6 +38,7 @@ export class GroupsController {
   @Get(':groupId/items')
   @Roles(UserRoles.ADMIN, UserRoles.GROUP_OWNER, UserRoles.GROUP_MEMBER)
   @UseGuards(AuthGuard)
+  @ExcludeSoftDeleted(true)
   async findAllItemsInGroup(@Param('groupId') groupId: string) {
     return this.groupsService.getItemsByGroupId(groupId);
   }

@@ -1,9 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
-import { UserService } from './user.service';
-import { MyLoggerService } from 'src/my-logger/my-logger.service';
+import { UsersService } from './users.service';
 import { Throttle } from '@nestjs/throttler';
 import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
-import { RolesService } from 'src/roles/roles.service';
 import { Roles } from 'src/decorators/roles.decorator';
 import { UserRoles } from 'src/enums/roles.enum';
 import { RolesGuard } from 'src/guards/roles.guard';
@@ -12,29 +10,26 @@ import { AuthGuard } from 'src/guards/auth.guard';
 import { AuthRequest } from 'src/interfaces.ts/auth-request.interface';
 import { ExcludeSoftDeleted } from 'src/decorators/exclude-soft-deleted.decorator';
 
-@Controller('user')
+@Controller('users')
 export class UserController {
-  constructor(
-    private readonly userService: UserService,
-    private readonly rolesService: RolesService,
-  ) {}
-  private readonly logger = new MyLoggerService(UserController.name);
+  constructor(private readonly usersService: UsersService) {}
 
-  @Throttle({ short: { ttl: 1000, limit: 1 }})
+  @Throttle({ short: { ttl: 1, limit: 1 }})
   @Post()
-  @UseGuards(AuthGuard)
-  createUser(@Body() createUserDto: CreateUserDto, @Req() req: AuthRequest) {
+  @Roles(UserRoles.ADMIN)
+  @UseGuards(AuthGuard, RolesGuard)
+  findOrCreateUser(@Body() createUserDto: CreateUserDto, @Req() req: AuthRequest) {
     const requestorId = req.user?.userId;
-    return this.userService.createUser(createUserDto, requestorId);
+    return this.usersService.findOrCreateUser(createUserDto, requestorId);
   }
 
-  @Throttle({ short: { ttl: 1000, limit: 1 }})
+  @Throttle({ short: { ttl: 1, limit: 1 }})
   @Get(':userId')
   @Roles(UserRoles.ADMIN, UserRoles.USER)
   @UseGuards(AuthGuard, RolesGuard)
   @ExcludeSoftDeleted(true)
   findUserById(@Param('userId',) userId: string) {
-    return this.userService.findUserById(userId);
+    return this.usersService.findUserById(userId);
   }
 
   @Patch(':userId')
@@ -45,20 +40,13 @@ export class UserController {
     @Body() updateUserDto: UpdateUserDto,
     @GetUser('id') requestorId: string,
   ) {
-    return this.userService.updateUser(userId, updateUserDto, requestorId);
-  }
-
-  @Get(':userId/roles')
-  @Roles(UserRoles.ADMIN)
-  @UseGuards(AuthGuard, RolesGuard)
-  getRolesByUserId(@Param('userId') userId: string) {
-    return this.rolesService.getRolesByUserId(userId);
+    return this.usersService.updateUser(userId, updateUserDto, requestorId);
   }
 
   @Delete(':userId')
   @Roles(UserRoles.ADMIN, UserRoles.USER)
   @UseGuards(AuthGuard, RolesGuard)
   removeUser(@Param('userId') userId: string) {
-    return this.userService.softDeleteUserAndCleanup(userId);
+    return this.usersService.softDeleteUserAndCleanup(userId);
   }
 }

@@ -3,10 +3,11 @@ import { Item } from "./item.interface";
 import { Message } from "./message.interface";
 import { Transaction } from "./transaction.interface";
 import { Group } from "./group.interface";
+import { UserWallet } from "./user-wallet.interface";
 
 export interface User {
   id: number;
-  walletAddress: string;
+  userWallets: UserWallet[]
   email?: string;
   items: Item[];
   buyerTransactions: Transaction[];

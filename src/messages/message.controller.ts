@@ -23,7 +23,7 @@ export class MessageController {
     return this.messageService.findAll();
   }
 
-  @Throttle({ short: { ttl: 1000, limit: 1 }})
+  @Throttle({ short: { ttl: 1, limit: 1 }})
   @Get(':id')
   @ExcludeSoftDeleted(true)
   findOne(@Param('id') id: string) {

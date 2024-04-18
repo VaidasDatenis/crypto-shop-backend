@@ -1,15 +1,9 @@
-import { Catch, ArgumentsHost, HttpStatus, HttpException } from "@nestjs/common";
-import { BaseExceptionFilter } from "@nestjs/core";
-import { Request, Response } from "express";
-import { MyLoggerService } from "./my-logger/my-logger.service";
-import { PrismaClientValidationError } from "@prisma/client/runtime/library";
-
-type MyResponseObj = {
-  statusCode: number,
-  timeStamp: string,
-  path: string,
-  response: string | object,
-}
+import { Catch, ArgumentsHost, HttpException, HttpStatus } from '@nestjs/common';
+import { BaseExceptionFilter } from '@nestjs/core';
+import { Response, Request } from 'express';
+import { ThrottlerException } from '@nestjs/throttler';
+import { PrismaClientValidationError } from '@prisma/client/runtime/library';
+import { MyLoggerService } from './my-logger/my-logger.service';
 
 @Catch()
 export class AllExceptionsFilter extends BaseExceptionFilter {
@@ -19,24 +13,35 @@ export class AllExceptionsFilter extends BaseExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
-    const myResponseObj: MyResponseObj = {
-      statusCode: 500,
+    const myResponseObj: any = {
+      statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
       timeStamp: new Date().toISOString(),
       path: request.url,
-      response: '',
-    }
+      method: request.method,
+      response: 'Internal Server Error',
+    };
+
     if (exception instanceof HttpException) {
       myResponseObj.statusCode = exception.getStatus();
       myResponseObj.response = exception.getResponse();
     } else if (exception instanceof PrismaClientValidationError) {
       myResponseObj.statusCode = 422;
-      myResponseObj.response = exception.message.replaceAll(/\n/g, '');
-    } else {
-      myResponseObj.statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
-      myResponseObj.response = 'Internal Server Error';
+      myResponseObj.response = 'Data validation failed - check your inputs.';
+    } else if (exception instanceof ThrottlerException) {
+      myResponseObj.statusCode = HttpStatus.TOO_MANY_REQUESTS;
+      myResponseObj.response = 'Too many requests, please try again later.';
     }
+
+    this.logger.error(
+      `Error Response: ${JSON.stringify({
+        path: myResponseObj.path,
+        method: myResponseObj.method,
+        message: myResponseObj.response,
+      })}`,
+      AllExceptionsFilter.name
+    );
+
     response.status(myResponseObj.statusCode).json(myResponseObj);
-    this.logger.error(myResponseObj.response, AllExceptionsFilter.name);
-    super.catch(exception, host);
+    // No call to super.catch() to prevent double handling
   }
 }
